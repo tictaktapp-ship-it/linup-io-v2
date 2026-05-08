@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignupPage } from './pages/auth/SignupPage';
 import { LoginPage } from './pages/auth/LoginPage';
+import { MarketingHome } from './pages/marketing/MarketingHome';
+import { PricingPage } from './pages/marketing/PricingPage';
+import { AboutPage } from './pages/marketing/AboutPage';
 
-// Placeholder until Phase 3/4 builds the real app shell
+// Placeholder until Phase 4 builds the real app shell
 function AppShell() {
   return (
     <div style={{
@@ -15,7 +18,7 @@ function AppShell() {
       fontFamily: 'var(--font-sans)',
       fontSize: '16px',
     }}>
-      <p>App shell — Phase 3 coming next.</p>
+      <p>Dashboard — Phase 4 coming next.</p>
     </div>
   );
 }
@@ -32,18 +35,22 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public auth routes */}
+        {/* Marketing routes — public, no auth required (Doc 8D Phase 3) */}
+        <Route path="/" element={<MarketingHome />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/about" element={<AboutPage />} />
+
+        {/* Public auth routes (Phase 2) */}
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected app routes */}
+        {/* Protected app routes (Phase 4+) */}
         <Route element={<ProtectedRoute />}>
           <Route path="/app/*" element={<AppShell />} />
         </Route>
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
