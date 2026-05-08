@@ -1,0 +1,26 @@
+﻿# Dependencies
+node_modules/
+
+# Environment files — never commit these
+.env
+.env.local
+.env.*.local
+server/.env
+
+# Secrets store
+E:\linup-secrets.env
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Supabase
+supabase/.temp/
