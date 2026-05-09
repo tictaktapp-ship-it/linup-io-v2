@@ -1,0 +1,78 @@
+/* ============================================================
+   LINUP v2 — Brand CSS Variables
+   Source: Doc 10 Brand Guidelines (authoritative)
+   Dark mode is PRIMARY for all /app routes.
+   Light surfaces used for marketing only.
+   ============================================================ */
+
+:root {
+  /* Brand */
+  --color-brand:              #8C00B4;
+  --color-brand-hover:        #7A00A0;
+  --color-brand-magenta:      #C400FF;
+  --color-brand-deep:         #3D006B;
+  --color-brand-gradient:     linear-gradient(135deg, #3D006B 0%, #8C00B4 50%, #C400FF 100%);
+
+  /* Dark surfaces (primary — app shell) */
+  --color-dark-0:             #0C0C0E;
+  --color-dark-1:             #141417;
+  --color-dark-2:             #1E1E22;
+  --color-dark-3:             #2A2A30;
+
+  /* Light surfaces (marketing, modals) */
+  --color-surface-0:          #FAFAFA;
+  --color-surface-1:          #F4F4F2;
+  --color-surface-2:          #EBEBEA;
+  --color-surface-3:          #E0E0DE;
+
+  /* Text */
+  --color-text-primary:       #1A1A18;
+  --color-text-secondary:     #4A4A46;
+  --color-text-tertiary:      #8A8A82;
+  --color-text-disabled:      #BEBEB8;
+  --color-text-on-dark:       #F0F0EE;
+  --color-text-on-dark-2:     #A0A09A;
+
+  /* Semantic */
+  --color-success:            #2D6A4F;
+  --color-success-bg:         #D8F3DC;
+  --color-success-bright:     #52B788;
+  --color-warning:            #B45309;
+  --color-warning-bg:         #FEF3C7;
+  --color-error:              #DC2626;
+  --color-error-bg:           #FEF2F2;
+  --color-advisory:           #6366F1;
+  --color-advisory-bg:        #EEF2FF;
+
+  /* Borders */
+  --color-border:             #E0E0DE;
+  --color-border-dark:        #2A2A30;
+  --color-border-focus:       #8C00B4;
+
+  /* Typography */
+  --font-sans:   'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:   'JetBrains Mono', 'Fira Code', ui-monospace, Consolas, monospace;
+
+  /* Spacing */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px;
+
+  /* Border Radius */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* Shadows */
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-medium: 0 4px 16px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06);
+  --shadow-focus:  0 0 0 3px rgba(140,0,180,0.25);
+
+  /* Layout (Doc 10 three-panel spec) */
+  --topbar-height:   48px;
+  --sidebar-width:   220px;
+  --rightpanel-width: 320px;
+}

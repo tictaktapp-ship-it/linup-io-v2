@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
 import { authRoutes } from './api/auth.js';
+import { projectRoutes } from './api/projects.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -21,6 +22,7 @@ await fastify.register(fastifyJwt, {
 
 // --- Routes ---
 await fastify.register(authRoutes);
+await fastify.register(projectRoutes);
 
 // --- Health check (unauthenticated) ---
 fastify.get('/health', async () => ({

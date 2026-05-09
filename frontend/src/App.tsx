@@ -4,24 +4,9 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { MarketingHome } from './pages/marketing/MarketingHome';
 import { PricingPage } from './pages/marketing/PricingPage';
 import { AboutPage } from './pages/marketing/AboutPage';
-
-// Placeholder until Phase 4 builds the real app shell
-function AppShell() {
-  return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'var(--color-dark-0)',
-      color: 'var(--color-surface-0)',
-      fontFamily: 'var(--font-sans)',
-      fontSize: '16px',
-    }}>
-      <p>Dashboard — Phase 4 coming next.</p>
-    </div>
-  );
-}
+import { AppShell } from './components/dashboard/AppShell';
+import { DashboardPage } from './pages/app/DashboardPage';
+import { NewProjectPage } from './pages/app/NewProjectPage';
 
 // ProtectedRoute: if no linup_session cookie present, redirect to /login
 // Full JWT + two_factor_verified enforcement happens server-side on every /api/* call
@@ -44,9 +29,13 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected app routes (Phase 4+) */}
+        {/* Protected app routes — AppShell wraps all /app/* (Phase 4) */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/app/*" element={<AppShell />} />
+          <Route element={<AppShell />}>
+            <Route path="/app" element={<DashboardPage />} />
+            <Route path="/app/new" element={<NewProjectPage />} />
+            {/* Phase 5+ routes added here */}
+          </Route>
         </Route>
 
         {/* Catch-all */}
