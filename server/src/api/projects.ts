@@ -137,4 +137,50 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
 
     return reply.status(201).send({ project });
   });
+
+  // -- GET /api/projects/:id -----------------------------------------------
+  // Returns single project + all stage_runs. Used by Workspace (Phase 5).
+  // No cost data returned per Doc 8D Phase 5.
+  fastify.get('/api/projects/:id', { preHandler: requireAuth }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { id: userId, organisation_id } = request.profile;
+
+    // Verify project belongs to this org
+    const { data: project, error: projErr } = await supabase
+      .from('projects')
+      .select('id, name, description, status, current_stage, progress_pct, created_at, updated_at')
+      .eq('id', id)
+      .eq('organisation_id', organisation_id)
+      .single();
+
+    if (projErr || !project) {
+      return reply.status(404).send({ error: 'NOT_FOUND' });
+    }
+
+    // Verify user is a member of this project
+    const { data: member, error: memberErr } = await supabase
+      .from('project_members')
+      .select('role')
+      .eq('project_id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (memberErr || !member) {
+      return reply.status(403).send({ error: 'FORBIDDEN' });
+    }
+
+    // Fetch all stage_runs ordered by stage number
+    const { data: stageRuns, error: stageErr } = await supabase
+      .from('stage_runs')
+      .select('id, stage, status, started_at, completed_at, hold_count, created_at')
+      .eq('project_id', id)
+      .order('stage', { ascending: true });
+
+    if (stageErr) {
+      fastify.log.error(stageErr, 'GET /api/projects/:id -- stage_runs fetch failed');
+      return reply.status(500).send({ error: 'STAGE_RUNS_FETCH_FAILED' });
+    }
+
+    return reply.send({ project, stageRuns: stageRuns ?? [] });
+  });
 }
