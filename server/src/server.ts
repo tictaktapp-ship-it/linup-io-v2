@@ -7,6 +7,7 @@ import { secretsRoutes } from './api/secrets.js';
 import { pipelineRoutes } from './api/pipeline.js';
 import { downloadsRoutes } from './api/downloads.js';
 import { mecRoutes } from './api/mec.js';
+import { webhookRoutes } from './api/webhooks.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -31,6 +32,7 @@ await fastify.register(secretsRoutes);
 await fastify.register(pipelineRoutes);
 await fastify.register(downloadsRoutes);
 await fastify.register(mecRoutes);
+await fastify.register(webhookRoutes);
 
 // --- Health check (unauthenticated) ---
 fastify.get('/health', async () => ({
