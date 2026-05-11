@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
+import fastifyRateLimit from '@fastify/rate-limit';
 import { authRoutes } from './api/auth.js';
 import { projectRoutes } from './api/projects.js';
 import { secretsRoutes } from './api/secrets.js';
@@ -19,6 +20,23 @@ const fastify = Fastify({ logger: true });
 await fastify.register(fastifyCookie, {
   secret: process.env.COOKIE_SECRET!,
   hook: 'onRequest',
+});
+
+// --- Rate limiting (Doc 11 D7) --- in-memory store; swap to Redis when Upstash configured
+await fastify.register(fastifyRateLimit, {
+  max: 200,
+  timeWindow: '1 minute',
+  addHeaders: {
+    'x-ratelimit-limit': true,
+    'x-ratelimit-remaining': true,
+    'x-ratelimit-reset': true,
+    'retry-after': true,
+  },
+  errorResponseBuilder: (_req: any, context: any) => ({
+    statusCode: 429,
+    error: 'RATE_LIMITED',
+    message: 'Too many requests. Retry after ' + context.after + '.',
+  }),
 });
 
 await fastify.register(fastifyJwt, {

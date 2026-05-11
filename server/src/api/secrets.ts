@@ -93,7 +93,7 @@ export async function secretsRoutes(fastify: FastifyInstance): Promise<void> {
   // POST /api/secrets/save — body never logged (Doc 14 sec req 1)
   fastify.post(
     '/api/secrets/save',
-    { preHandler: requireAuth, config: { rawBody: false } },
+    { preHandler: requireAuth },
     async (request, reply) => {
       request.log = request.log.child({ body: '[REDACTED]' });
 
@@ -316,7 +316,7 @@ export async function secretsRoutes(fastify: FastifyInstance): Promise<void> {
   // PATCH /api/secrets/update
   fastify.patch(
     '/api/secrets/update',
-    { preHandler: requireAuth, config: { rawBody: false } },
+    { preHandler: requireAuth },
     async (request, reply) => {
       request.log = request.log.child({ body: '[REDACTED]' });
 
