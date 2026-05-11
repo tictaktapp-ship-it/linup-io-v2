@@ -58,7 +58,7 @@ export async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
       } else {
         const { data: newOrg, error: orgError } = await supabase
           .from('organisations')
-          .insert({ plan: 'FREE', is_active: true })
+          .insert({ name: 'My Organisation', plan: 'FREE', is_active: true })
           .select('id')
           .single();
 
