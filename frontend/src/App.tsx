@@ -9,6 +9,7 @@ import { DashboardPage } from './pages/app/DashboardPage';
 import { NewProjectPage } from './pages/app/NewProjectPage';
 import WorkspacePage from './pages/app/WorkspacePage';
 import SecretsWizardPage from './pages/app/SecretsWizardPage';
+import CouncilPage from './pages/app/CouncilPage';
 
 // ProtectedRoute: if no linup_session cookie present, redirect to /login
 // Full JWT + two_factor_verified enforcement happens server-side on every /api/* call

@@ -44,7 +44,7 @@ export function NewProjectPage() {
       }
 
       const data = await res.json();
-      navigate(/app/project/, { replace: true });
+      navigate('/app/project/' + data.project.id + '/council', { replace: true });
     } catch {
       setError('Could not reach the server. Please check your connection.');
     } finally {
