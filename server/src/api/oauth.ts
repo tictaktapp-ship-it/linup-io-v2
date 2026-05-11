@@ -86,7 +86,7 @@ export async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
 
     // 8. Issue LINUP session JWT
     const sessionToken = fastify.jwt.sign(
-      { sub: userId, email, two_factor_verified: true, auth_method: authMethod, organisation_id: organisationId },
+      { sub: userId, email, two_factor_verified: true, auth_method: authMethod },
       { expiresIn: '7d' }
     );
 
