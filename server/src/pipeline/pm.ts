@@ -52,7 +52,7 @@ export async function issueProceed(
 
   const { error } = await db
     .from('stage_runs')
-    .update({ pm_proceed_at: new Date().toISOString(), status: 'PROCEEDING' })
+    .update({ pm_proceed_issued_at: new Date().toISOString(), status: 'PROCEEDING' })
     .eq('project_id', projectId)
     .eq('stage', stage);
 
@@ -70,7 +70,7 @@ export async function issueLocked(
 ): Promise<void> {
   const { error } = await db
     .from('stage_runs')
-    .update({ status: 'LOCKED', pm_locked_at: new Date().toISOString() })
+    .update({ status: 'LOCKED', pm_locked_issued_at: new Date().toISOString() })
     .eq('project_id', projectId)
     .eq('stage', stage);
 

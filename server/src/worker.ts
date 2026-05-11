@@ -1,12 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { runStage } from './pipeline/index.js';
 
-// ─── Worker (Doc 8E — background pipeline job runner) ────────────────────────
-// Polls stage_runs for status QUEUED, calls runStage, handles errors.
-// Runs as a separate process alongside the API server.
+// --- Worker (Doc 8E - background pipeline job runner) ---
+// Polls stage_runs for status PENDING, claims them, calls runStage.
+// Two-step claim: SELECT oldest PENDING row, then UPDATE by id.
+// (Supabase JS client does not support .limit() on UPDATE operations)
 
-const POLL_INTERVAL_MS = 5000; // 5 seconds
-const MAX_CONCURRENT = 1;      // one stage at a time per worker instance
+const POLL_INTERVAL_MS = 5000;
+const MAX_CONCURRENT = 1;
 
 const db = createClient(
   process.env['SUPABASE_URL'] as string,
@@ -18,30 +19,37 @@ let running = 0;
 async function claimAndRun(): Promise<void> {
   if (running >= MAX_CONCURRENT) return;
 
-  // Claim one QUEUED stage run atomically
-  const { data: claimed, error } = await db
+  // Step 1: Find oldest PENDING stage run
+  const { data: candidate, error: findError } = await db
     .from('stage_runs')
-    .update({ status: 'RUNNING', worker_claimed_at: new Date().toISOString() })
-    .eq('status', 'QUEUED')
+    .select('id, project_id, stage')
+    .eq('status', 'PENDING')
     .order('created_at', { ascending: true })
     .limit(1)
-    .select('id, project_id, stage')
     .single();
 
-  if (error || !claimed) return; // nothing to claim
+  if (findError || !candidate) return;
+
+  // Step 2: Claim it by id (guard against race condition)
+  const { error: claimError } = await db
+    .from('stage_runs')
+    .update({ status: 'PROCEEDING', updated_at: new Date().toISOString() })
+    .eq('id', candidate.id)
+    .eq('status', 'PENDING');
+
+  if (claimError) return;
 
   running++;
-  const { project_id: projectId, stage } = claimed;
-  console.log('[worker] Claimed stage_run — project ' + projectId + ' stage ' + stage);
+  const { project_id: projectId, stage } = candidate;
+  console.log('[worker] Claimed stage_run - project ' + projectId + ' stage ' + stage);
 
   try {
     await runStage(projectId, stage, db);
-    console.log('[worker] Stage complete — project ' + projectId + ' stage ' + stage);
+    console.log('[worker] Stage complete - project ' + projectId + ' stage ' + stage);
   } catch (err: any) {
-    console.error('[worker] Stage failed — project ' + projectId + ' stage ' + stage + ': ' + err.message);
+    console.error('[worker] Stage failed - project ' + projectId + ' stage ' + stage + ': ' + err.message);
     await db.from('stage_runs').update({
-      status: 'ERROR',
-      error_message: err.message,
+      status: 'API_ERROR',
       updated_at: new Date().toISOString(),
     }).eq('project_id', projectId).eq('stage', stage);
   } finally {
@@ -58,5 +66,5 @@ async function poll(): Promise<void> {
   setTimeout(poll, POLL_INTERVAL_MS);
 }
 
-console.log('[worker] Starting — poll interval: ' + POLL_INTERVAL_MS + 'ms');
+console.log('[worker] Starting - poll interval: ' + POLL_INTERVAL_MS + 'ms');
 poll();

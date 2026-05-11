@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { requireAuth } from '../middleware/auth.js';
 import { supabase } from '../lib/supabase.js';
 
 export async function notificationRoutes(app: FastifyInstance): Promise<void> {
@@ -7,7 +8,7 @@ export async function notificationRoutes(app: FastifyInstance): Promise<void> {
   // Registers a browser PushSubscription for the authenticated user.
   // Body: { subscription: PushSubscriptionJSON }
   app.post('/api/notifications/subscribe', {
-    preHandler: [(app as any).requireAuth],
+    preHandler: [requireAuth],
   }, async (request, reply) => {
     const userId = (request as any).user.sub;
     const { subscription } = request.body as { subscription: object };
@@ -35,7 +36,7 @@ export async function notificationRoutes(app: FastifyInstance): Promise<void> {
   // Unregisters a browser PushSubscription for the authenticated user.
   // Body: { endpoint: string }
   app.delete('/api/notifications/subscribe', {
-    preHandler: [(app as any).requireAuth],
+    preHandler: [requireAuth],
   }, async (request, reply) => {
     const userId = (request as any).user.sub;
     const { endpoint } = request.body as { endpoint: string };
