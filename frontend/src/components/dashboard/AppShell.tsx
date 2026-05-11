@@ -1,3 +1,4 @@
+import { apiFetch, clearAuth } from '../../lib/api';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Plus, Settings, CreditCard, LogOut } from 'lucide-react';
 
@@ -6,7 +7,7 @@ function TopBar() {
   const navigate = useNavigate();
 
   async function handleLogout() {
-    await fetch((import.meta.env.VITE_API_URL as string) + '/api/auth/logout', { method: 'POST', credentials: 'include' });
+    await apiFetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     navigate('/login', { replace: true });
   }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-const API = import.meta.env.VITE_API_URL as string;
+import { apiFetch, clearAuth } from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
@@ -277,8 +277,8 @@ export function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(API + '/api/projects', { credentials: 'include' });
-        if (res.status === 401) { navigate('/login', { replace: true }); return; }
+        const res = await apiFetch('/api/projects');
+        if (res.status === 401) { clearAuth(); navigate('/login', { replace: true }); return; }
         if (!res.ok) throw new Error('Failed to load projects');
         const data = await res.json();
         setProjects(data.projects ?? []);

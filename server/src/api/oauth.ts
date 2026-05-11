@@ -99,6 +99,6 @@ export async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
         maxAge: 60 * 60 * 24 * 7,
       })
       .status(200)
-      .send({ message: 'Authenticated.' });
+      .send({ message: 'Authenticated.', token: sessionToken });
   });
 }

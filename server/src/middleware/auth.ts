@@ -1,4 +1,4 @@
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { supabase } from '../lib/supabase.js';
 
 declare module '@fastify/jwt' {
@@ -33,17 +33,25 @@ export async function requireAuth(
   reply: FastifyReply
 ): Promise<void> {
   try {
-    // 1. Verify JWT signature and expiry
-    await request.jwtVerify();
+    // Accept Bearer token from Authorization header OR cookie
+    const authHeader = request.headers['authorization'];
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7);
+      try {
+        request.user = (request.server as FastifyInstance).jwt.verify(token);
+      } catch {
+        return reply.status(401).send({ error: 'Invalid token' });
+      }
+    } else {
+      await request.jwtVerify();
+    }
 
-    // 2. Check two_factor_verified claim
     if (request.user.two_factor_verified !== true) {
       return reply.status(401).send({ error: 'Two-factor verification required' });
     }
 
     const userId = request.user.sub;
 
-    // 3. Check user_profile exists
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('user_id')
@@ -54,7 +62,6 @@ export async function requireAuth(
       return reply.status(401).send({ error: 'User not found' });
     }
 
-    // 4. Get organisation membership
     const { data: membership } = await supabase
       .from('organisation_members')
       .select('organisation_id')
@@ -65,7 +72,6 @@ export async function requireAuth(
       return reply.status(401).send({ error: 'No organisation found' });
     }
 
-    // 5. Attach resolved profile to request
     request.profile = {
       id: userId,
       email: request.user.email,
