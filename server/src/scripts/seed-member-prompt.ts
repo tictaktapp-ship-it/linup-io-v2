@@ -54,7 +54,7 @@ async function main() {
   const db = createClient(process.env['SUPABASE_URL'] as string, process.env['SUPABASE_SERVICE_ROLE_KEY'] as string);
 
   const { error } = await db.from('member_prompts').upsert({
-    member_id: memberId, title, stage, tier,
+    member_id: memberId, member_title: title, stage, model_tier: tier, output_schema: {},
     group_id: groupId, is_conditional: isConditional, condition_domain: conditionDomain,
     prompt_system_encrypted: encryptedSystem,
     prompt_template_encrypted: encryptedTemplate,
