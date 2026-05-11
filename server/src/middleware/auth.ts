@@ -57,17 +57,12 @@ export async function requireAuth(
     // 4. Get organisation membership
     const { data: membership } = await supabase
       .from('organisation_members')
-      .select('organisation_id, organisations(is_active)')
+      .select('organisation_id')
       .eq('user_id', userId)
       .maybeSingle();
 
     if (!membership) {
       return reply.status(401).send({ error: 'No organisation found' });
-    }
-
-    const org = membership.organisations as unknown as { is_active: boolean } | null;
-    if (!org?.is_active) {
-      return reply.status(401).send({ error: 'Organisation suspended' });
     }
 
     // 5. Attach resolved profile to request
