@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '../../lib/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { PipelineSidebar } from '../../components/workspace/PipelineSidebar';
@@ -38,7 +39,7 @@ export default function WorkspacePage() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch((import.meta.env.VITE_API_URL as string) + '/api/projects/' + id, { credentials: 'include' })
+    apiFetch('/api/projects/' + id)
       .then(async (res) => {
         if (res.status === 403 || res.status === 404) { navigate('/app'); return; }
         if (!res.ok) throw new Error('Failed to load project');

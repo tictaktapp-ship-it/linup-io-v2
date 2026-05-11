@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL ?? '';
+import { apiFetch } from '../../lib/api';
 
 interface WizardStatus {
   wizard_completed: boolean;
@@ -45,7 +46,7 @@ function TestButton({ service, projectId, onResult }: { service: string; project
   const run = async () => {
     setLoading(true);
     try {
-      const res = await fetch(API + '/api/secrets/test', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId, service }) });
+      const res = await apiFetch('/secrets/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId, service }) });
       const data = await res.json();
       onResult(data);
     } catch { onResult({ success: false, detail: 'Network error' }); }
@@ -80,14 +81,14 @@ export default function SecretsWizardPage() {
 
   useEffect(() => {
     if (!projectId) return;
-    fetch(API + '/api/secrets/status/' + projectId, { credentials: 'include' })
+    apiFetch('/secrets/status/' + projectId, { credentials: 'include' })
       .then(r => r.json()).then(setStatus).catch(() => {});
   }, [projectId]);
 
   const saveStep = async (stepName: string, secrets: Record<string, string>) => {
     setSaving(true); setError(null);
     try {
-      const res = await fetch(API + '/api/secrets/save', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId, step: stepName, secrets }) });
+      const res = await apiFetch('/secrets/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId, step: stepName, secrets }) });
       if (!res.ok) throw new Error('Save failed');
       setStep(s => s + 1); setTestResult(null);
     } catch (e: any) { setError(e.message); }
@@ -97,7 +98,7 @@ export default function SecretsWizardPage() {
   const generateEnv = async () => {
     setSaving(true); setError(null);
     try {
-      const res = await fetch(API + '/api/secrets/generate-env', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId }) });
+      const res = await apiFetch('/secrets/generate-env', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project_id: projectId }) });
       const data = await res.json();
       if (!res.ok) throw new Error('Generate failed');
       setDownloadUrl(data.download_url);
