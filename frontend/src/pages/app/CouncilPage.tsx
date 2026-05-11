@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { apiFetch } from '../../lib/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
@@ -151,7 +152,7 @@ export default function CouncilPage() {
   async function sendConciergeOpener() {
     setSending(true);
     try {
-      const res = await fetch(API('/council/concierge'), {
+      const res = await apiFetch('/council/concierge'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -173,7 +174,7 @@ export default function CouncilPage() {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setSending(true);
     try {
-      const res = await fetch(API('/council/concierge'), {
+      const res = await apiFetch('/council/concierge'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -202,7 +203,7 @@ export default function CouncilPage() {
     const newHistory = [...pisHistory, { role: 'user', content: userMsg }];
 
     try {
-      const res = await fetch(API('/council/pis'), {
+      const res = await apiFetch('/council/pis'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -226,7 +227,7 @@ export default function CouncilPage() {
     if (!ideaBrief) return;
     setSending(true);
     try {
-      await fetch(API('/council/confirm-brief'), {
+      await apiFetch('/council/confirm-brief'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -243,7 +244,7 @@ export default function CouncilPage() {
   async function confirmCharter() {
     setSending(true);
     try {
-      await fetch(API('/council/confirm-charter'), {
+      await apiFetch('/council/confirm-charter'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
