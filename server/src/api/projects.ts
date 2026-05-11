@@ -68,11 +68,10 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
         created_by: userId,
         name,
         description,
-        status: 'PENDING',
+        status: 'ONBOARDING',
         current_stage: 0,
-        progress_pct: 0,
       })
-      .select('id, name, description, status, current_stage, progress_pct, created_at')
+      .select('id, name, description, status, current_stage, created_at')
       .single();
 
     if (createErr || !project) {
