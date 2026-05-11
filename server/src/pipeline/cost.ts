@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 
 // Tier model resolution — configured via env vars, swappable without code changes
 // Charter: TIER_S_MODEL = anthropic/claude-opus-4
@@ -69,5 +70,33 @@ export async function record(
   if (error) {
     // Non-fatal — log but do not throw. Cost tracking must not break pipeline.
     console.error('[cost] Failed to record spend:', error.message);
+  }
+}
+// --- Soft limiter (Doc 11 D11) ---
+// Checks spend thresholds after each AI call. Internal alert only — no user impact.
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function checkSoftLimits(
+  projectId: string,
+  db: SupabaseClient
+): Promise<void> {
+  const alertEmail = process.env.SOFT_LIMIT_ALERT_EMAIL;
+  if (!alertEmail) return;
+
+  // Check 1: single project total cost > £30
+  const { data: projectSpend } = await db
+    .from('linup_spend_log')
+    .select('cost_gbp')
+    .eq('project_id', projectId);
+
+  const projectTotal = (projectSpend ?? []).reduce((sum: number, r: any) => sum + (r.cost_gbp ?? 0), 0);
+
+  if (projectTotal > 30) {
+    await resend.emails.send({
+      from: 'LINUP Alerts <alerts@linup.io>',
+      to: alertEmail,
+      subject: '[LINUP] Soft limit: project spend > £30',
+      html: '<p>Project <strong>' + projectId + '</strong> has accumulated £' + projectTotal.toFixed(2) + ' in OpenRouter costs.</p>',
+    }).catch(() => {}); // non-fatal
   }
 }

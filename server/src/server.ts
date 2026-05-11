@@ -1,3 +1,12 @@
+import * as Sentry from '@sentry/node';
+
+// Sentry must be initialised before any other imports (Doc 8D Phase 10)
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV ?? 'development',
+  tracesSampleRate: 0.1,
+});
+
 import Fastify from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
@@ -59,6 +68,13 @@ await fastify.register(notificationRoutes);
 await fastify.register(councilRoutes);
 await fastify.register(oauthRoutes);
 await fastify.register(founderRoutes);
+
+// --- Sentry error handler ---
+fastify.setErrorHandler((error: any, _request, reply) => {
+  Sentry.captureException(error);
+  fastify.log.error(error);
+  reply.status((error as any).statusCode ?? 500).send({ error: (error as any).message ?? 'Internal Server Error' });
+});
 
 // --- Health check (unauthenticated) ---
 fastify.get('/health', async () => ({

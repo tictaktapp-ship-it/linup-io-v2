@@ -21,6 +21,7 @@
         "@fastify/jwt": "^10.0.0",
         "@fastify/rate-limit": "^10.3.0",
         "@react-pdf/renderer": "^4.5.1",
+        "@sentry/node": "^10.52.0",
         "@supabase/supabase-js": "^2.105.4",
         "archiver": "^8.0.0",
         "bullmq": "^5.76.6",

@@ -12,6 +12,7 @@ import * as rtm from './rtm.js';
 import * as resilience from './resilience.js';
 import * as schema from './schema.js';
 import { callAIWithRetry, ApiError, RateLimitExhaustedError } from './payload.js';
+import { checkSoftLimits } from './cost.js';
 import { record } from './cost.js';
 import { assemblePayload } from './payload.js';
 import { loadMember, loadVpForStage, loadMembersForStage } from './members.js';
@@ -34,6 +35,7 @@ async function runIc(memberId: string, projectId: string, stage: number, groupSu
     const payload = await assemblePayload(memberId, member.systemPrompt, member.outputTemplate, projectId, stage, db);
     const response = await callAIWithRetry(member.tier, payload.toMessages(member.systemPrompt));
     await record(projectId, stage, memberId, member.tier, response, db);
+    void checkSoftLimits(projectId, db); // non-blocking soft limit check (Doc 11 D11)
     const content = (response.choices[0]?.message.content ?? '');
     const validation = await schema.validate(memberId, content);
     if (!validation.passed) {
