@@ -1,0 +1,59 @@
+FOCUS MANAGEMENT SPECIALIST OUTPUT
+Status: COMPLETE
+Sections: 17.4 (Keyboard Navigation) supplement - Focus Management
+
+## Skip Links
+[Skip link targets, activation behaviour, visual treatment when focused]
+
+## Focus Order - Per Screen
+[For each screen in the inventory:]
+### Screen: [Name] ([ID])
+Focus sequence: [Ordered list of focusable elements with rationale for non-DOM-order items]
+First focus on screen load: [Specific element]
+Post-interaction destinations:
+  [Action] -> focus moves to: [specific element]
+
+## Modal and Overlay Focus Management
+[For each modal, drawer, popover, bottom sheet:]
+### [Component name]
+Focus on open: [First element]
+Focus trap: [Contained within - yes. Tab wraps to: first element]
+Focus on Escape/close: [Returns to: specific trigger element]
+
+## Dynamic Content Focus
+### Route change
+Focus destination: [Element]
+Announcement: [ARIA live region content]
+### Async data load
+[Specification]
+### Form submission (success)
+[Specification]
+### Form submission (error)
+[Specification]
+### Error state appearance
+[Specification]
+
+## Focus Indicator Contract
+Outline width: [Npx minimum - 2px minimum per WCAG 2.2 2.4.11]
+Outline offset: [Npx]
+Contrast against white background: [ratio - must meet 3:1]
+Contrast against dark background: [ratio - must meet 3:1]
+Suppression policy: [No suppression. If suppressed: replacement specification.]
+
+## Focus Voids Identified
+[List of screens or interactions where focus destination is unclear - flagged for VP]
+
+SELF-VERIFICATION (mandatory)
+CONSTRAINT VERIFICATION:
+[ ] Every screen has a focus order entry: satisfied by -> [specific element list]
+[ ] Every modal has trap-and-restore: satisfied by -> [modal list]
+[ ] WCAG 2.4.11 met: satisfied by -> [focus indicator contract]
+[ ] No TBD references: confirmed
+ASSUMPTIONS I MADE:
+[ ] [assumption] - implication if wrong: [impact]
+GAPS I COULD NOT FILL:
+[ ] [gap] - impact: [what is missing]
+SELF-ASSESSMENT: COMPLETE / PARTIAL
+Confidence: HIGH / MEDIUM / LOW
+DECISIONS MADE: NONE
+HANDOFF: Focus spec for Accessibility Engineer (Stage 5), QA Accessibility Test Lead (Stage 6)

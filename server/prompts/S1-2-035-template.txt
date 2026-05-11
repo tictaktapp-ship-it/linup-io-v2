@@ -1,0 +1,79 @@
+NEURODIVERSITY AND COGNITIVE LOAD SPECIALIST OUTPUT
+Status: COMPLETE
+Section: 17 supplement - Neurodiversity Requirements
+
+## Sensory Overload Prevention
+### Animation Policy
+prefers-reduced-motion: [All animations pause/reduce - specific behaviour for each animation type]
+Auto-play video: [Prohibited / User-initiated only]
+Auto-play audio: [Prohibited]
+Flash/strobe: [Prohibited - WCAG 2.3.1]
+Notification animation: [Constrained to: specific rules]
+Profile addressed: Autism, ADHD, migraine, anxiety
+
+### Notification Density
+Max notifications per hour during active use: [N]
+Batching rule: [Batch to single notification when: condition]
+Do-not-disturb protocol: [When product is in an active task flow: suppress non-critical notifications]
+Profile addressed: ADHD, autism
+
+### Visual Noise Reduction
+[Maximum simultaneous moving elements]
+[Decorative animation must not autoplay - user opt-in]
+[Background patterns or textures: none in reading/input areas]
+Profile addressed: Autism, sensory processing differences
+
+## Dyslexia Support
+Font requirements: [No pure serif for body text. Preferred: humanist sans-serif with open letterforms]
+Line length: [Maximum 70 characters (approx 35em at 16px base)]
+Justified text: [Prohibited - left-aligned only]
+Letter spacing: [Minimum 0.12em - user stylesheet override must not be blocked]
+Word spacing: [Minimum 0.16em - user stylesheet override must not be blocked]
+Line height: [Minimum 1.5x font size]
+Underline usage: [Links only - no underline for emphasis]
+Italic usage: [Avoid for body text - sparingly for emphasis only]
+Profile addressed: Dyslexia, Irlen syndrome
+
+## ADHD Support
+Auto-save: [Every N seconds / On every navigation event / Explicit save required - specify and justify]
+Progress persistence: [Partially completed forms preserved for N hours]
+Focus mode: [If in scope: description. If not in scope: note as out of scope per WONT list]
+Task entry/exit: [Every task flow has a visible start point and a visible end point]
+Notification timing: [Notifications not delivered during: active form entry / multi-step task completion]
+Profile addressed: ADHD, attention and executive function differences
+
+## Autism Spectrum Support
+Navigation consistency: [Navigation elements in same position on every screen]
+Behaviour consistency: [Same element type behaves identically across all screens]
+No unexpected context change: [No screen transition, content refresh, or modal triggered by: focus alone / hover alone / input without submit - WCAG 3.2.1, 3.2.2]
+Change communication: [All content changes not triggered by user action communicated via ARIA live region]
+Profile addressed: Autism, demand avoidance, predictability needs
+
+## Dark Pattern Prohibitions
+| Pattern | Why prohibited | Specific product context |
+|---|---|---|
+| Confirmshaming | Damages trust, exploits guilt - disproportionate impact on anxious users | Cancel button text must not be shaming |
+| False urgency | Triggers anxiety-driven decisions | No fake countdown timers on subscription offers |
+| Roach motel | Causes distress and loss of control | Cancellation must be as simple as sign-up |
+| Hidden costs | Causes anxiety around financial unpredictability | Full price shown at every step |
+| Misdirection | Exploits attention differences | No pre-checked add-ons |
+[Add product-specific dark patterns based on the commercial model]
+
+## Cross-Review of Group 1G Outputs
+[Any neurodiversity gaps not addressed by S1-2-022 through S1-2-032 - specific gap and recommendation]
+
+SELF-VERIFICATION (mandatory)
+CONSTRAINT VERIFICATION:
+[ ] All animation requirements reference prefers-reduced-motion: confirmed
+[ ] Dark pattern prohibitions are specific: confirmed
+[ ] Every requirement cites a specific neurodivergent profile: confirmed
+[ ] No requirements outside WONT scope: confirmed
+[ ] No TBD references: confirmed
+ASSUMPTIONS I MADE:
+[ ] [assumption] - implication if wrong: [impact]
+GAPS I COULD NOT FILL:
+[ ] [gap] - impact: [what is missing]
+SELF-ASSESSMENT: COMPLETE / PARTIAL
+Confidence: HIGH / MEDIUM / LOW
+DECISIONS MADE: NONE
+HANDOFF: Requirements for UX Writer (dark pattern prohibitions and dyslexia copy), QA Lead (Stage 6 neurodiversity test matrix)

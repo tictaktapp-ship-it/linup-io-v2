@@ -1,0 +1,57 @@
+COGNITIVE ACCESSIBILITY SPECIALIST OUTPUT (S1-2-030)
+Status: COMPLETE
+Section: 17 supplement - Cognitive Accessibility Requirements
+
+## Plain Language Requirements
+Target reading level: [Grade X Flesch-Kincaid / CEFR level]
+Maximum sentence length: [N words]
+Maximum paragraph length: [N sentences]
+Forbidden language categories: [Technical jargon / Passive voice / Nominalizations]
+Alternative text for abbreviations: [Required on first use]
+WCAG reference: 3.1.3 Unusual Words, 3.1.5 Reading Level
+
+## Consistent Navigation Requirements
+[Navigation element placement rules - must not vary between screens]
+[Navigation label consistency rules]
+[Breadcrumb and orientation indicator requirements]
+WCAG reference: 3.2.3 Consistent Navigation, 3.2.4 Consistent Identification
+
+## Error Prevention Requirements
+Form validation timing: [Inline as typed / On field blur / On submit - with rationale]
+Confirmation threshold: [Required before: destructive actions / data loss / irreversible purchases]
+Undo availability: [Available for N minutes / within same session / not required for: X]
+WCAG reference: 3.3.4 Error Prevention (Legal, Financial, Data)
+
+## Progress and State Requirements
+Multi-step indicator: [Required for flows of N+ steps]
+Auto-save frequency: [Every N seconds / on navigation / not applicable - rationale]
+Session persistence: [State preserved for N hours after close]
+Time limit policy: [No time limits / Warning at N minutes remaining / Extension available]
+WCAG reference: 2.2.1 Timing Adjustable, 2.2.6 Timeouts
+
+## Memory Aid Requirements
+Cross-session memory: [What the system must remember between sessions]
+Contextual help trigger: [When inline help appears and how]
+Progressive disclosure rule: [What is shown by default vs behind a trigger]
+COGA reference: COGA Objective 4 - Support Learning and Memory
+
+## Cognitive Load Reduction Rules
+Max primary actions per screen: [N]
+Information hierarchy rule: [Most important information always: position/size/contrast]
+Distraction policy in task flows: [No notifications during: X. Suppress: Y]
+COGA reference: COGA Objective 3 - Use Clear and Understandable Content and Controls
+
+SELF-VERIFICATION (mandatory)
+CONSTRAINT VERIFICATION:
+[ ] All requirements traceable to WCAG 2.2 or COGA: confirmed
+[ ] Reading level is specific: confirmed
+[ ] Every requirement is testable: confirmed
+[ ] No TBD references: confirmed
+ASSUMPTIONS I MADE:
+[ ] [assumption] - implication if wrong: [impact]
+GAPS I COULD NOT FILL:
+[ ] [gap] - impact: [what is missing]
+SELF-ASSESSMENT: COMPLETE / PARTIAL
+Confidence: HIGH / MEDIUM / LOW
+DECISIONS MADE: NONE
+HANDOFF: Requirements for UX Writer (plain language), UX Designer (revision), QA Lead (Stage 6 test cases)

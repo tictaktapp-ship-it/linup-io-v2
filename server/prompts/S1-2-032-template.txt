@@ -1,0 +1,62 @@
+LOW VISION AND MAGNIFICATION SPECIALIST OUTPUT
+Status: COMPLETE
+Section: 17 supplement - Low Vision Requirements
+
+## 400% Zoom Reflow (WCAG 1.4.10)
+Reflow strategy: [Single-column layout at 320px CSS width - browser zoom 400% on 1280px viewport]
+All content available without horizontal scroll: YES
+
+Exempt components:
+| Component | Exemption rationale | Alternative access method |
+|---|---|---|
+[Only genuinely exempt components - data tables, maps, canvas elements]
+
+Breakpoint strategy for zoom reflow:
+[How the layout responds at 320px CSS width]
+
+## Text Resize at 200% (WCAG 1.4.4)
+Browser text resize compliance: [All text scales; no overflow or clipping]
+OS font size scaling compliance: [All text scales; no overflow or clipping]
+Images of text policy: [Prohibited except for: specific justified exceptions]
+
+## Spacing Override Support (WCAG 1.4.12)
+Line height override: [CSS does not prevent - use relative units]
+Letter spacing override: [CSS does not prevent]
+Word spacing override: [CSS does not prevent]
+Paragraph spacing override: [CSS does not prevent]
+Implementation note: [No fixed-height containers that clip overflowing text]
+
+## Windows High Contrast Mode
+Forced-colors media query: [Implemented]
+Elements using currentColor: [List - borders, outlines, focus indicators]
+Elements using transparent: [List - where required for HC compatibility]
+Elements using system colours: [ButtonText, ButtonFace, LinkText, etc. where appropriate]
+Custom token override behaviour: [Which tokens are overridden by HC and what the HC value is]
+
+## macOS Increase Contrast
+Impact: [What changes visually when this setting is active]
+CSS approach: [prefers-contrast: more media query - what changes]
+
+## Non-Text Contrast Requirements (WCAG 1.4.11 - 3:1 minimum)
+| Component | Background | Required ratio | Must be verified by Design Tokens Engineer |
+|---|---|---|---|
+[All UI component boundaries, icons, form fields, focus indicators]
+
+## Design Revision Items
+[Specific design or token decisions from Groups 1D/1E that fail these requirements]
+
+SELF-VERIFICATION (mandatory)
+CONSTRAINT VERIFICATION:
+[ ] WCAG 1.4.10 reflow compliance specified: confirmed
+[ ] All exempt components named and justified: confirmed
+[ ] WCAG 1.4.12 spacing override support specified: confirmed
+[ ] Windows High Contrast addressed (both forced-colors and -ms-high-contrast): confirmed
+[ ] No TBD references: confirmed
+ASSUMPTIONS I MADE:
+[ ] [assumption] - implication if wrong: [impact]
+GAPS I COULD NOT FILL:
+[ ] [gap] - impact: [what is missing]
+SELF-ASSESSMENT: COMPLETE / PARTIAL
+Confidence: HIGH / MEDIUM / LOW
+DECISIONS MADE: NONE
+HANDOFF: Requirements for Frontend Architect (CSS implementation), Design Tokens Engineer (contrast verification), QA (zoom and HC testing)

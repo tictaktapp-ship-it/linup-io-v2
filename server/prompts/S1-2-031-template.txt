@@ -1,0 +1,49 @@
+MOTOR ACCESSIBILITY SPECIALIST OUTPUT
+Status: COMPLETE
+Section: 17 supplement - Motor Accessibility Requirements
+
+## Touch and Pointer Target Requirements
+| Element type | Min size (CSS px) | Min spacing | WCAG ref | Exception |
+|---|---|---|---|---|
+| Button (primary) | 44x44 | 8px | 2.5.5 (AAA) | None |
+| Button (secondary) | 24x24 | 8px | 2.5.8 (AA) | None |
+| [All element types] | | | | |
+
+## Gesture Alternatives
+| Gesture | Where used | Single-pointer alternative | Keyboard alternative |
+|---|---|---|---|
+| [All gestures in the product] | | | |
+
+## Drag and Drop Alternatives
+| Interface | Keyboard alternative | Activation |
+|---|---|---|
+| [All drag-and-drop interfaces] | | |
+
+## Time Limit Policy
+| Interaction | Time limit | Extension mechanism | WCAG ref |
+|---|---|---|---|
+| [All timed interactions, or: No time limits - compliant by design] | | | |
+
+## Voice Control Requirements
+Label matching rule: [Visible label must match or be contained in accessible name - WCAG 2.5.3]
+Duplicate element policy: [Elements with identical visible labels must have unique accessible names]
+Custom component rule: [Any component without native semantic role must have aria-label matching visible label]
+
+## Design Issues Flagged
+[Interactions that require Group 1D revision to be motor-accessible - specific screen and element]
+
+SELF-VERIFICATION (mandatory)
+CONSTRAINT VERIFICATION:
+[ ] Every WCAG reference cites specific SC number and level: confirmed
+[ ] Every gesture has single-pointer alternative: confirmed
+[ ] Touch targets meet WCAG 2.5.8 minimum: confirmed
+[ ] No requirements stated as ranges: confirmed
+[ ] No TBD references: confirmed
+ASSUMPTIONS I MADE:
+[ ] [assumption] - implication if wrong: [impact]
+GAPS I COULD NOT FILL:
+[ ] [gap] - impact: [what is missing]
+SELF-ASSESSMENT: COMPLETE / PARTIAL
+Confidence: HIGH / MEDIUM / LOW
+DECISIONS MADE: NONE
+HANDOFF: Requirements for Frontend Accessibility Engineer (Stage 5), QA Motor Test (Stage 6)
