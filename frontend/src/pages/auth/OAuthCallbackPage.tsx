@@ -30,13 +30,16 @@ export function OAuthCallbackPage() {
 
       // Implicit flow: tokens in hash
       if (hash.includes('access_token')) {
-        setDetail('Found hash tokens, getting session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-          setError('Hash session failed: ' + (sessionError?.message ?? 'no session'));
+        setDetail('Found hash tokens, parsing...');
+        const params = new URLSearchParams(hash.slice(1));
+        const access_token = params.get('access_token') ?? '';
+        const refresh_token = params.get('refresh_token') ?? '';
+        const { data, error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (sessionError || !data.session) {
+          setError('setSession failed: ' + (sessionError?.message ?? 'no session'));
           return;
         }
-        await completeOAuth(session.access_token, session.user, navigate, setError, setDetail);
+        await completeOAuth(data.session.access_token, data.session.user, navigate, setError, setDetail);
         return;
       }
 
