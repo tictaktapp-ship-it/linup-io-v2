@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+const API = import.meta.env.VITE_API_URL as string;
 import { useNavigate } from 'react-router-dom';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 
@@ -276,7 +277,7 @@ export function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch('/api/projects', { credentials: 'include' });
+        const res = await fetch(API + '/api/projects', { credentials: 'include' });
         if (res.status === 401) { navigate('/login', { replace: true }); return; }
         if (!res.ok) throw new Error('Failed to load projects');
         const data = await res.json();

@@ -20,7 +20,7 @@ export function NewProjectPage() {
     setGated(false);
 
     try {
-      const res = await fetch('/api/projects', {
+      const res = await fetch((import.meta.env.VITE_API_URL as string) + '/api/projects', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
