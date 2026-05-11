@@ -77,13 +77,16 @@ async function completeOAuth(
   setError: (e: string) => void,
   setDetail: (d: string) => void
 ) {
-  const provider = user.app_metadata['provider'] as 'google' | 'github' | undefined;
-  const provider_id = user.user_metadata['provider_id'] as string | undefined
+  // Check identities array for OAuth provider
+  const identities = (user as unknown as { identities?: Array<{ provider: string; id: string }> }).identities ?? [];
+  const oauthIdentity = identities.find(i => i.provider === 'google' || i.provider === 'github');
+  const provider = (oauthIdentity?.provider ?? user.app_metadata['provider']) as 'google' | 'github' | undefined;
+  const provider_id = oauthIdentity?.id ?? user.user_metadata['provider_id'] as string | undefined
     ?? user.user_metadata['sub'] as string | undefined
     ?? user.id;
-  setDetail('Provider: ' + provider + ' | Calling backend...');
+  setDetail('Provider: ' + provider + ' | Identities: ' + identities.map(i => i.provider).join(',') + ' | Calling backend...');
   if (!provider || (provider !== 'google' && provider !== 'github')) {
-    setError('Unsupported OAuth provider: ' + String(provider));
+    setError('Unsupported OAuth provider: ' + String(provider) + ' | Identities: ' + identities.map(i => i.provider).join(','));
     return;
   }
   try {
