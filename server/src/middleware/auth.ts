@@ -1,7 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { supabase } from '../lib/supabase.js';
 
-// Correct augmentation pattern for @fastify/jwt — extend UserType, not FastifyRequest directly
 declare module '@fastify/jwt' {
   interface FastifyJWT {
     payload: {
@@ -19,7 +18,6 @@ declare module '@fastify/jwt' {
   }
 }
 
-// Attach resolved profile to request after auth (separate from JWT payload)
 declare module 'fastify' {
   interface FastifyRequest {
     profile: {
@@ -35,36 +33,48 @@ export async function requireAuth(
   reply: FastifyReply
 ): Promise<void> {
   try {
-    // 1. Verify JWT signature and expiry (throws if invalid/expired)
+    // 1. Verify JWT signature and expiry
     await request.jwtVerify();
 
-    // 2. Check two_factor_verified claim (Doc 3: Session Management)
+    // 2. Check two_factor_verified claim
     if (request.user.two_factor_verified !== true) {
       return reply.status(401).send({ error: 'Two-factor verification required' });
     }
 
-    // 3. Load user profile and check organisation is active (Doc 3)
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('id, email, organisation_id, organisations(is_active)')
-      .eq('id', request.user.sub)
-      .single();
+    const userId = request.user.sub;
 
-    if (error || !profile) {
+    // 3. Check user_profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (profileError || !profile) {
       return reply.status(401).send({ error: 'User not found' });
     }
 
-    const orgs = profile.organisations as unknown as { is_active: boolean }[] | null;
-    const org = Array.isArray(orgs) ? orgs[0] : null;
+    // 4. Get organisation membership
+    const { data: membership } = await supabase
+      .from('organisation_members')
+      .select('organisation_id, organisations(is_active)')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!membership) {
+      return reply.status(401).send({ error: 'No organisation found' });
+    }
+
+    const org = membership.organisations as unknown as { is_active: boolean } | null;
     if (!org?.is_active) {
       return reply.status(401).send({ error: 'Organisation suspended' });
     }
 
-    // 4. Attach resolved profile to request
+    // 5. Attach resolved profile to request
     request.profile = {
-      id: profile.id,
-      email: profile.email,
-      organisation_id: profile.organisation_id,
+      id: userId,
+      email: request.user.email,
+      organisation_id: membership.organisation_id,
     };
   } catch {
     return reply.status(401).send({ error: 'Unauthorized' });
