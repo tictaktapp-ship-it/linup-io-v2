@@ -124,25 +124,13 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
     // Verify project belongs to this org
     const { data: project, error: projErr } = await supabase
       .from('projects')
-      .select('id, name, description, status, current_stage, progress_pct, created_at, updated_at')
+      .select('id, name, description, status, current_stage, created_at, updated_at')
       .eq('id', id)
       .eq('organisation_id', organisation_id)
       .single();
 
     if (projErr || !project) {
       return reply.status(404).send({ error: 'NOT_FOUND' });
-    }
-
-    // Verify user is a member of this project
-    const { data: member, error: memberErr } = await supabase
-      .from('project_members')
-      .select('role')
-      .eq('project_id', id)
-      .eq('user_id', userId)
-      .single();
-
-    if (memberErr || !member) {
-      return reply.status(403).send({ error: 'FORBIDDEN' });
     }
 
     // Fetch all stage_runs ordered by stage number
