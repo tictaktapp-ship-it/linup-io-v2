@@ -334,12 +334,12 @@ export function NewProjectPage() {
         </button>
       </div>
 
-      <style>{
+      <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
         }
-      }</style>
+      `}</style>
     </div>
   );
 }
