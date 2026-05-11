@@ -8,6 +8,7 @@ import { AppShell } from './components/dashboard/AppShell';
 import { DashboardPage } from './pages/app/DashboardPage';
 import { NewProjectPage } from './pages/app/NewProjectPage';
 import WorkspacePage from './pages/app/WorkspacePage';
+import SecretsWizardPage from './pages/app/SecretsWizardPage';
 
 // ProtectedRoute: if no linup_session cookie present, redirect to /login
 // Full JWT + two_factor_verified enforcement happens server-side on every /api/* call
@@ -21,20 +22,21 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Marketing routes — public, no auth required (Doc 8D Phase 3) */}
+        {/* Marketing routes â€” public, no auth required (Doc 8D Phase 3) */}
         <Route path='/' element={<MarketingHome />} />
         <Route path='/pricing' element={<PricingPage />} />
         <Route path='/about' element={<AboutPage />} />
         {/* Public auth routes (Phase 2) */}
         <Route path='/signup' element={<SignupPage />} />
         <Route path='/login' element={<LoginPage />} />
-        {/* Protected app routes — AppShell wraps all /app/* (Phase 4) */}
+        {/* Protected app routes â€” AppShell wraps all /app/* (Phase 4) */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route path='/app' element={<DashboardPage />} />
             <Route path='/app/new' element={<NewProjectPage />} />
-            {/* Phase 5 — Workspace (Doc 5 Screen 3) */}
+            {/* Phase 5 â€” Workspace (Doc 5 Screen 3) */}
             <Route path='/app/project/:id' element={<WorkspacePage />} />
+            <Route path='/app/project/:id/secrets' element={<SecretsWizardPage />} />
           </Route>
         </Route>
         {/* Catch-all */}
