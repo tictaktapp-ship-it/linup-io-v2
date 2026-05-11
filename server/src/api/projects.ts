@@ -13,7 +13,7 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
     // Fetch all projects for this org, ordered by most recently updated
     const { data: projects, error: projErr } = await supabase
       .from('projects')
-      .select('id, name, description, current_stage, status, progress_pct, updated_at')
+      .select('id, name, description, current_stage, status, updated_at')
       .eq('organisation_id', organisation_id)
       .order('updated_at', { ascending: false });
 
@@ -22,30 +22,7 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(500).send({ error: 'Failed to load projects' });
     }
 
-    // Fetch recent activity events (last 20, across all org projects)
-    // stage_events table: id, project_id, type, stage, created_at
-    const projectIds = (projects ?? []).map((p: { id: string }) => p.id);
-
-    let activity: object[] = [];
-    if (projectIds.length > 0) {
-      const { data: events, error: evtErr } = await supabase
-        .from('stage_events')
-        .select('id, project_id, type, stage, created_at, projects(name)')
-        .in('project_id', projectIds)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (!evtErr && events) {
-        activity = events.map((e) => ({
-          id: e.id as string,
-          project_id: e.project_id as string,
-          project_name: (Array.isArray(e.projects) ? e.projects[0]?.name : (e.projects as { name: string } | null)?.name) ?? '',
-          type: e.type as string,
-          stage: e.stage as number,
-          created_at: e.created_at as string,
-        }));
-      }
-    }
+    const activity: object[] = [];
 
     return reply.send({ projects: projects ?? [], activity });
   });
