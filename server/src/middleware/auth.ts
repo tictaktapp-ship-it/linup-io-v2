@@ -8,11 +8,13 @@ declare module '@fastify/jwt' {
       sub: string;
       email: string;
       two_factor_verified: boolean;
+      auth_method?: 'PASSWORD' | 'GOOGLE' | 'GITHUB';
     };
     user: {
       sub: string;
       email: string;
       two_factor_verified: boolean;
+      auth_method?: 'PASSWORD' | 'GOOGLE' | 'GITHUB';
     };
   }
 }

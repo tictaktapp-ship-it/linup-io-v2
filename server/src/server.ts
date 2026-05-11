@@ -10,6 +10,7 @@ import { mecRoutes } from './api/mec.js';
 import { webhookRoutes } from './api/webhooks.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { councilRoutes } from './api/council.js';
+import { oauthRoutes } from './api/oauth.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -37,6 +38,7 @@ await fastify.register(mecRoutes);
 await fastify.register(webhookRoutes);
 await fastify.register(notificationRoutes);
 await fastify.register(councilRoutes);
+await fastify.register(oauthRoutes);
 
 // --- Health check (unauthenticated) ---
 fastify.get('/health', async () => ({

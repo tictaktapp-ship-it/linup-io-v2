@@ -98,7 +98,7 @@ export function SignupPage() {
   async function handleOAuth(provider: 'google' | 'github') {
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/app` },
+      options: { redirectTo: `${window.location.origin}/auth/oauth/callback` },
     });
   }
 

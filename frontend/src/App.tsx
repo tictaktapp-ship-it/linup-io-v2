@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { SignupPage } from './pages/auth/SignupPage';
 import { LoginPage } from './pages/auth/LoginPage';
+import { OAuthCallbackPage } from './pages/auth/OAuthCallbackPage';
 import { MarketingHome } from './pages/marketing/MarketingHome';
 import { PricingPage } from './pages/marketing/PricingPage';
 import { AboutPage } from './pages/marketing/AboutPage';
@@ -30,6 +31,7 @@ export default function App() {
         {/* Public auth routes (Phase 2) */}
         <Route path='/signup' element={<SignupPage />} />
         <Route path='/login' element={<LoginPage />} />
+        <Route path='/auth/oauth/callback' element={<OAuthCallbackPage />} />
         {/* Protected app routes â€” AppShell wraps all /app/* (Phase 4) */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
@@ -39,6 +41,8 @@ export default function App() {
             <Route path='/app/project/:id' element={<WorkspacePage />} />
             <Route path='/app/project/:id/secrets' element={<SecretsWizardPage />} />
           </Route>
+          {/* Phase 9 — Council — inside ProtectedRoute, outside AppShell (own layout) */}
+          <Route path='/app/project/:id/council' element={<CouncilPage />} />
         </Route>
         {/* Catch-all */}
         <Route path='*' element={<Navigate to='/' replace />} />
