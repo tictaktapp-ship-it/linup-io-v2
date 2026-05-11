@@ -15,7 +15,7 @@ import CouncilPage from './pages/app/CouncilPage';
 // ProtectedRoute: if no linup_session cookie present, redirect to /login
 // Full JWT + two_factor_verified enforcement happens server-side on every /api/* call
 function ProtectedRoute() {
-  const hasSession = document.cookie.includes('linup_session=');
+  const hasSession = localStorage.getItem('linup_authed') === '1';
   if (!hasSession) return <Navigate to='/login' replace />;
   return <Outlet />;
 }

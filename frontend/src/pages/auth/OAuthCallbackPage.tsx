@@ -101,7 +101,7 @@ async function completeOAuth(
     if (!res.ok) { setError('Backend error ' + res.status + ': ' + text.slice(0, 200)); return; }
     const data = JSON.parse(text) as { twoFactorRequired?: boolean; userId?: string; };
     if (data.twoFactorRequired && data.userId) { navigate('/verify-2fa?userId=' + data.userId); return; }
-    navigate('/app');
+    localStorage.setItem('linup_authed', '1'); navigate('/app');
   } catch (e) {
     setError('Network error: ' + String(e));
   }

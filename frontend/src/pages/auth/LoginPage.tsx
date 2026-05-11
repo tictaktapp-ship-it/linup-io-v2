@@ -51,7 +51,7 @@ export function LoginPage() {
       });
       const data = await res.json() as { error?: string };
       if (!res.ok) { setError(data.error ?? 'Invalid code'); return; }
-      navigate('/app');
+      localStorage.setItem('linup_authed', '1'); navigate('/app');
     } finally {
       setLoading(false);
     }
