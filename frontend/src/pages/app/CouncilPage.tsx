@@ -53,7 +53,7 @@ const PHASE05_MEMBER_ORDER = [
   'P05-1-001','P05-1-002','P05-2-001','P05-2-002','P05-2-003',
 ];
 
-const API = (path: string) => `/api${path}`;
+const API = (path: string) => (import.meta.env.VITE_API_URL as string) + '/api' + path;
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
