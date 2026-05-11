@@ -93,7 +93,7 @@ export async function oauthRoutes(fastify: FastifyInstance): Promise<void> {
     return reply
       .setCookie('linup_session', sessionToken, {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         secure: process.env.NODE_ENV === 'production',
         path: '/',
         maxAge: 60 * 60 * 24 * 7,
