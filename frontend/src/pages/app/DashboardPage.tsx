@@ -63,14 +63,14 @@ function relativeTime(iso: string): string {
 }
 
 // ─── ProjectTile ──────────────────────────────────────────────────────────────
-function ProjectTile({ project }: { project: Project }) {
+function ProjectTile({ project, onDelete }: { project: Project; onDelete: (id: string) => void }) {
   const navigate = useNavigate();
   const dot = statusDot(project.status);
   const stageLabel = STAGE_LABELS[project.current_stage] ?? 'Stage ' + project.current_stage;
 
   return (
     <div
-      onClick={() => navigate('/app/project/' + project.id)}
+      onClick={(e) => { if ((e.target as HTMLElement).closest('[data-delete]')) return; navigate('/app/project/' + project.id); }}
       style={{
         background: 'var(--color-dark-1)',
         border: '1px solid var(--color-border-dark)',
@@ -126,6 +126,8 @@ function ProjectTile({ project }: { project: Project }) {
         {project.progress_pct}% complete
       </div>
 
+      {/* Delete button */}
+      <button data-delete onClick={(e) => { e.stopPropagation(); if (confirm('Delete this project?')) onDelete(project.id); }} style={{ background: 'none', border: 'none', color: 'var(--color-text-on-dark-2)', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: 0, marginTop: 'var(--space-1)' }}>Delete project</button>
       {/* Status row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
         <span style={{
@@ -377,7 +379,7 @@ export function DashboardPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 'var(--space-4)',
           }}>
-            {projects.map(p => <ProjectTile key={p.id} project={p} />)}
+            {projects.map(p => <ProjectTile key={p.id} project={p} onDelete={async (id) => { await apiFetch('/api/projects/' + id, { method: 'DELETE' }); setProjects(prev => prev.filter(x => x.id !== id)); }} />)}
           </div>
           <ActivityFeed events={activity} />
         </>

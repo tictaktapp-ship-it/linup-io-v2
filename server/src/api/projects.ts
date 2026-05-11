@@ -114,6 +114,17 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
     return reply.status(201).send({ project });
   });
 
+  // -- DELETE /api/projects/:id -------------------------------------------
+  fastify.delete('/api/projects/:id', { preHandler: requireAuth }, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const { organisation_id } = request.profile;
+    const { error } = await supabase.from('projects').delete().eq('id', id).eq('organisation_id', organisation_id);
+    if (error) return reply.status(500).send({ error: 'Failed to delete project' });
+    await supabase.from('stage_runs').delete().eq('project_id', id);
+    await supabase.from('organisations').update({ free_project_used: false }).eq('id', organisation_id);
+    return reply.status(200).send({ message: 'Deleted' });
+  });
+
   // -- GET /api/projects/:id -----------------------------------------------
   // Returns single project + all stage_runs. Used by Workspace (Phase 5).
   // No cost data returned per Doc 8D Phase 5.
