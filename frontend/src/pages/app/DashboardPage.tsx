@@ -55,21 +55,21 @@ function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
   if (mins < 1)   return 'just now';
-  if (mins < 60)  return `m ago`;
+  if (mins < 60)  return mins + 'm ago';
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24)   return `h ago`;
-  return `d ago`;
+  if (hrs < 24)   return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
 }
 
 // ─── ProjectTile ──────────────────────────────────────────────────────────────
 function ProjectTile({ project }: { project: Project }) {
   const navigate = useNavigate();
   const dot = statusDot(project.status);
-  const stageLabel = STAGE_LABELS[project.current_stage] ?? `Stage `;
+  const stageLabel = STAGE_LABELS[project.current_stage] ?? 'Stage ' + project.current_stage;
 
   return (
     <div
-      onClick={() => navigate(`/app/project/`)}
+      onClick={() => navigate('/app/project/' + project.id)}
       style={{
         background: 'var(--color-dark-1)',
         border: '1px solid var(--color-border-dark)',
@@ -115,7 +115,7 @@ function ProjectTile({ project }: { project: Project }) {
       }}>
         <div style={{
           height: '100%',
-          width: `%`,
+          width: project.progress_pct + '%',
           background: 'var(--color-brand)',
           borderRadius: 'var(--radius-pill)',
           transition: 'width 400ms ease',
@@ -212,11 +212,11 @@ function ActivityFeed({ events }: { events: ActivityEvent[] }) {
   if (events.length === 0) return null;
 
   function eventLabel(e: ActivityEvent): string {
-    const stage = STAGE_LABELS[e.stage] ?? `Stage `;
+    const stage = STAGE_LABELS[e.stage] ?? 'Stage ' + e.stage;
     switch (e.type) {
-      case 'STAGE_COMPLETE': return `Stage  -  completed`;
-      case 'INPUT_NEEDED':   return `Your input needed: `;
-      case 'STAGE_STARTED':  return `Stage  -  started`;
+      case 'STAGE_COMPLETE': return 'Stage ' + stage + ' - ' + e.project_name + ' completed';
+      case 'INPUT_NEEDED':   return 'Your input needed: ' + e.project_name;
+      case 'STAGE_STARTED':  return 'Stage ' + stage + ' - ' + e.project_name + ' started';
       default:               return e.project_name;
     }
   }
