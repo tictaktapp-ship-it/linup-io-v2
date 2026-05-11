@@ -11,6 +11,7 @@ import { webhookRoutes } from './api/webhooks.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { councilRoutes } from './api/council.js';
 import { oauthRoutes } from './api/oauth.js';
+import { founderRoutes } from './api/founder.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -39,6 +40,7 @@ await fastify.register(webhookRoutes);
 await fastify.register(notificationRoutes);
 await fastify.register(councilRoutes);
 await fastify.register(oauthRoutes);
+await fastify.register(founderRoutes);
 
 // --- Health check (unauthenticated) ---
 fastify.get('/health', async () => ({
