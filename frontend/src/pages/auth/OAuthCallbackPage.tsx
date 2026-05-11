@@ -101,7 +101,7 @@ async function completeOAuth(
     if (!res.ok) { setError('Backend error ' + res.status + ': ' + text.slice(0, 200)); return; }
     const data = JSON.parse(text) as { twoFactorRequired?: boolean; userId?: string; token?: string; };
     if (data.twoFactorRequired && data.userId) { navigate('/verify-2fa?userId=' + data.userId); return; }
-    if (data.token) localStorage.setItem('linup_token', data.token); localStorage.setItem('linup_authed', '1'); navigate('/app');
+    if (data.token) { localStorage.setItem('linup_token', data.token); localStorage.setItem('linup_authed', '1'); navigate('/app'); } else { setError('No token in response'); }
   } catch (e) {
     setError('Network error: ' + String(e));
   }
