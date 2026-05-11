@@ -8,6 +8,7 @@ Sentry.init({
 });
 
 import Fastify from 'fastify';
+import fastifyCors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
 import fastifyRateLimit from '@fastify/rate-limit';
@@ -24,6 +25,18 @@ import { oauthRoutes } from './api/oauth.js';
 import { founderRoutes } from './api/founder.js';
 
 const fastify = Fastify({ logger: true });
+
+// --- CORS (must be first plugin)
+await fastify.register(fastifyCors, {
+  origin: [
+    'https://linup.io',
+    'https://www.linup.io',
+    'https://linup-io-v2.pages.dev',
+    'http://localhost:5173',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+});
 
 // --- Plugins ---
 await fastify.register(fastifyCookie, {
