@@ -84,7 +84,7 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
     const stageRuns = Array.from({ length: 13 }, (_, i) => ({
       project_id: project.id,
       stage: i,
-      status: i === 0 ? 'PENDING' : 'WAITING',
+      status: 'PENDING',
     }));
 
     const { error: stageErr } = await supabase
