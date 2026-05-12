@@ -9,7 +9,7 @@ export function HeroSection() {
       padding: '120px 40px 80px', background: '#FFFFFF',
     }}>
       <p style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8C00B4', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ color: '#8C00B4' }}>•</span> THE AI CO-FOUNDER FOR NON-TECHNICAL FOUNDERS
+        <span style={{ color: '#8C00B4' }}>•</span> THE AI ENGINE FOR NON-TECHNICAL FOUNDERS
       </p>
 
       <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 800, lineHeight: 1.08, letterSpacing: '-0.03em', margin: '0 0 24px', maxWidth: '780px', color: '#1A1A18' }}>

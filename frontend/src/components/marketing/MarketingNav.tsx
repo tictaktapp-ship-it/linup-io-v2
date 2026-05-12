@@ -26,9 +26,9 @@ export function MarketingNav() {
     }}>
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
         {logoFailed ? (
-          <span style={{ fontWeight: 800, fontSize: '18px', letterSpacing: '-0.02em', color: '#8C00B4' }}>LINUP</span>
+          <span style={{ fontWeight: 800, fontSize: '20px', letterSpacing: '-0.02em', color: '#8C00B4' }}>LINUP</span>
         ) : (
-          <img src="/logo.png" alt="LINUP" style={{ height: '22px', width: 'auto', display: 'block' }} onError={() => setLogoFailed(true)} />
+          <img src="/logo.png" alt="LINUP" style={{ height: '32px', width: 'auto', display: 'block' }} onError={() => setLogoFailed(true)} />
         )}
       </Link>
 
