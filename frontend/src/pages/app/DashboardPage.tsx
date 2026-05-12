@@ -128,6 +128,8 @@ function ProjectTile({ project, onDelete }: { project: Project; onDelete: (id: s
 
       {/* Delete button */}
       <button data-delete onClick={(e) => { e.stopPropagation(); if (confirm('Delete this project?')) onDelete(project.id); }} style={{ background: 'none', border: 'none', color: 'var(--color-text-on-dark-2)', fontSize: '11px', cursor: 'pointer', textAlign: 'left', padding: 0, marginTop: 'var(--space-1)' }}>Delete project</button>
+      {/* Delete */}
+      <button data-delete onClick={(e) => { e.stopPropagation(); if (window.confirm('Delete this project? This cannot be undone.')) onDelete(project.id); }} style={{ marginTop: '8px', background: 'none', border: 'none', color: '#666', fontSize: '11px', cursor: 'pointer', padding: 0, textAlign: 'left' as const }}>Delete project</button>
       {/* Status row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
         <span style={{
@@ -379,7 +381,7 @@ export function DashboardPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 'var(--space-4)',
           }}>
-            {projects.map(p => <ProjectTile key={p.id} project={p} onDelete={async (id) => { await apiFetch('/api/projects/' + id, { method: 'DELETE' }); setProjects(prev => prev.filter(x => x.id !== id)); }} />)}
+              <ProjectTile key={p.id} project={p} onDelete={async (id) => { await apiFetch('/api/projects/' + id, { method: 'DELETE' }); setProjects(prev => prev.filter((x: Project) => x.id !== id)); }} />
           </div>
           <ActivityFeed events={activity} />
         </>
