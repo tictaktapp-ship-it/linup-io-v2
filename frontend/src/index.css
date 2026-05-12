@@ -285,7 +285,7 @@ input, textarea, select {
 .council-msg--user .council-msg__text { background: rgba(140,0,180,0.18); border: 1px solid rgba(140,0,180,0.3); }
 .council-msg__text--typing { color: var(--color-text-muted, #6B7280); font-style: italic; }
 .council-chat__input-row { display: flex; gap: 10px; padding: 14px; border-top: 1px solid var(--color-border, #1F1F23); }
-.council-chat__input { flex: 1; background: var(--color-bg-raised, #18181B); border: 1px solid var(--color-border, #1F1F23); border-radius: 8px; color: var(--color-text-primary, #F9FAFB); font-size: 14px; padding: 10px 14px; resize: none; font-family: inherit; line-height: 1.5; }
+.council-chat__input { flex: 1; background: #18181B; border: 1px solid #1F1F23; border-radius: 8px; color: #F9FAFB; font-size: 14px; padding: 10px 14px; resize: none; font-family: inherit; line-height: 1.5; }
 .council-chat__input:focus { outline: none; border-color: var(--color-brand, #8C00B4); }
 .council-chat__input:disabled { opacity: 0.5; }
 .council-chat__send { background: var(--color-brand, #8C00B4); color: #fff; border: none; border-radius: 8px; padding: 0 18px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
