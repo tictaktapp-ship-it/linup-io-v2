@@ -63,7 +63,7 @@ export default function CouncilPage() {
   const navigate = useNavigate();
 
   // UI phase state
-  const [uiPhase, setUiPhase] = useState
+  const [uiPhase, setUiPhase] = useState<
     'CONCIERGE' | 'PIS' | 'BRIEF_CONFIRM' | 'COUNCIL' | 'CONDITIONAL' |
     'BLOCKED' | 'PHASE05' | 'CHARTER_CONFIRM' | 'COMPLETE'
   >('CONCIERGE');
