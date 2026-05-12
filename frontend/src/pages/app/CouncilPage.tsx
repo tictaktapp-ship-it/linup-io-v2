@@ -483,38 +483,86 @@ export default function CouncilPage() {
               )}
             </div>
 
+            {/* Progress bar */}
+            {(() => {
+              const mems = councilState?.members ?? {};
+              const total = COUNCIL_MEMBER_ORDER.length;
+              const done = COUNCIL_MEMBER_ORDER.filter(id => mems[id]?.status === 'COMPLETE').length;
+              const running = COUNCIL_MEMBER_ORDER.filter(id => mems[id]?.status === 'RUNNING').length;
+              const pct = Math.round((done / total) * 100);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                    <span>{done} of {total} reviewed{running > 0 ? ' · ' + running + ' reviewing now' : ''}</span>
+                    <span>{pct}%</span>
+                  </div>
+                  <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '99px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: pct + '%', background: 'var(--color-brand)', borderRadius: '99px', transition: 'width 0.6s ease' }} />
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="council-grid">
               {COUNCIL_MEMBER_ORDER.map(id => {
                 const member = councilState?.members?.[id];
+                const profile = COUNCIL_MEMBER_PROFILES[id];
                 const isQG = id === 'P0-2-013';
+                const status = member?.status ?? 'PENDING';
                 return (
                   <div
                     key={id}
                     className={
                       'council-card' +
                       (isQG ? ' council-card--quality-gate' : '') +
-                      (member?.status === 'RUNNING' ? ' council-card--running' : '') +
-                      (member?.status === 'COMPLETE' ? ' council-card--complete' : '')
+                      (status === 'RUNNING' ? ' council-card--running' : '') +
+                      (status === 'COMPLETE' ? ' council-card--complete' : '')
                     }
                   >
-                    <div className="council-card__header">
-                      {memberIcon(member?.status ?? 'PENDING', member?.verdict)}
-                      <span className="council-card__id">{id}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
+                        background: status === 'PENDING' ? '#F0F0EE' : status === 'RUNNING' ? 'rgba(140,0,180,0.10)' : status === 'COMPLETE' ? 'rgba(45,106,79,0.10)' : '#FEF2F2',
+                        border: '1px solid ' + (status === 'RUNNING' ? 'rgba(140,0,180,0.3)' : status === 'COMPLETE' ? 'rgba(45,106,79,0.25)' : 'var(--color-border)'),
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: status === 'PENDING' ? '11px' : '14px', fontWeight: 700,
+                        color: status === 'PENDING' ? 'var(--color-text-tertiary)' : status === 'RUNNING' ? 'var(--color-brand)' : status === 'COMPLETE' ? '#2D6A4F' : 'var(--color-error)',
+                        transition: 'all 0.3s ease',
+                      }}>
+                        {status === 'RUNNING' ? '●' : status === 'COMPLETE' ? '✓' : status === 'ERROR' ? '✗' : (profile?.initials ?? id.slice(-3))}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {profile?.name ?? id}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>
+                          {profile?.role ?? member?.title ?? id}
+                        </div>
+                      </div>
                     </div>
-                    <div className="council-card__title">{member?.title ?? id}</div>
-                    {member?.status === 'RUNNING' && (
-                      <div className="council-card__status">REVIEWING…</div>
+                    {status === 'PENDING' && (
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Waiting…</div>
                     )}
-                    {member?.status === 'COMPLETE' && member.verdict && (
-                      <div className={'council-card__verdict council-card__verdict--' + member.verdict.toLowerCase()}>
-                        {member.verdict}
+                    {status === 'RUNNING' && (
+                      <div style={{ fontSize: '11px', color: 'var(--color-brand)', fontWeight: 600 }}>
+                        Reviewing now…
                       </div>
                     )}
-                    {member?.status === 'COMPLETE' && member.summary && (
+                    {status === 'COMPLETE' && member?.verdict && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <div className={'council-card__verdict council-card__verdict--' + member.verdict.toLowerCase()}>
+                          {member.verdict}
+                        </div>
+                        {member.confidence && (
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>{member.confidence}</span>
+                        )}
+                      </div>
+                    )}
+                    {status === 'COMPLETE' && member?.summary && (
                       <div className="council-card__summary">{member.summary}</div>
                     )}
-                    {member?.status === 'ERROR' && (
-                      <div className="council-card__status council-card__status--error">ERROR</div>
+                    {status === 'ERROR' && (
+                      <div style={{ fontSize: '11px', color: 'var(--color-error)' }}>Could not complete review</div>
                     )}
                   </div>
                 );
