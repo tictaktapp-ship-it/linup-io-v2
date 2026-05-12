@@ -186,7 +186,8 @@ export default function CouncilPage() {
       if (data.handoffToPis) {
         const conciergeHistory = messages.map(m => ({ role: m.role, content: m.content })); conciergeHistory.push({ role: 'assistant', content: data.reply }); setPisHistory(conciergeHistory);
         setTimeout(() => setUiPhase('PIS'), 800);
-    } finally {
+      }
+      }
       setSending(false);
     }
   }
