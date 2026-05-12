@@ -228,10 +228,23 @@ function buildQualityGatePrompt(
     `${r.title} (${r.id}): ${r.verdict}\n${r.summary}${r.conditions !== 'NONE' ? '\nConditions: ' + r.conditions : ''}${r.blocker !== 'NONE' ? '\nBlocker: ' + r.blocker : ''}`
   ).join('\n\n---\n\n');
 
+  // Detect resubmission — founder has answered the conditional questions
+  const founderAnswers = ideaBrief['founder_conditional_answers'] as string | undefined;
+  const resubmissionSection = founderAnswers
+    ? `\nRESUBMISSION CONTEXT:
+This is a resubmission. The founder has already received CONDITIONAL questions from a previous Council run and has now provided answers. Their answers are included in the Idea Brief above under "founder_conditional_answers".
+
+CRITICAL RESUBMISSION RULES:
+- You MUST read the founder's answers before evaluating the specialist verdicts
+- If the founder's answers genuinely address the conditions raised, you MUST return APPROVED or at most one remaining CONDITIONAL question
+- Do NOT repeat questions the founder has already answered
+- Only return CONDITIONAL if there are genuinely NEW unresolved issues not addressed by the founder's answers
+- Only return BLOCKED if there is a fundamental problem that the answers reveal or confirm\n`
+    : '';
+
   return `You are the Quality Gate — the final synthesiser on the LINUP Council.
-
 You have received verdicts from 12 specialist reviewers on an Idea Brief. Your job is to synthesise their verdicts into a single Quality Gate decision.
-
+${resubmissionSection}
 IDEA BRIEF:
 ${JSON.stringify(ideaBrief, null, 2)}
 
@@ -253,7 +266,6 @@ CONCERNS:
 CONDITIONAL_QUESTIONS: [If CONDITIONAL: up to 5 questions for the founder, one per line starting with Q:. If not CONDITIONAL: NONE]
 BLOCKED_REASON: [If BLOCKED: clear explanation of the fundamental problem. Otherwise: NONE]`;
 }
-
 function parseCouncilMemberResult(content: string): {
   verdict: string;
   confidence: string;
