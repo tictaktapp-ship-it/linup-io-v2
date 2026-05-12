@@ -390,11 +390,10 @@ export default function CouncilPage() {
 
       <div className="council-body">
         {!pageLoaded && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--color-text-tertiary)', fontSize: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--color-text-tertiary)', fontSize: '14px', padding: '40px' }}>
             Loading…
           </div>
         )}
-        {pageLoaded && (<>
 
         {/* ── CONCIERGE + PIS chat panel ── */}
         {(uiPhase === 'PIS' || uiPhase === 'BRIEF_CONFIRM') && (
@@ -772,7 +771,6 @@ export default function CouncilPage() {
           </div>
         )}
 
-        </>)}
       </div>
     </div>
   );
