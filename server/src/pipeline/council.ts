@@ -206,18 +206,23 @@ You are reviewing an Idea Brief submitted by a founder. Your job is to give an h
 IDEA BRIEF:
 ${JSON.stringify(ideaBrief, null, 2)}
 
+Your role is to PREPARE this idea for development, not to gatekeep it. Every idea has gaps — your job is to identify them so the engineering team can address them, not to stop the founder.
+
 Produce your review in this exact format:
-VERDICT: APPROVED | CONDITIONAL | BLOCKED
+VERDICT: APPROVED | CONDITIONAL
 CONFIDENCE: HIGH | MEDIUM | LOW
-SUMMARY: [2-3 sentences — your overall assessment]
+SUMMARY: [2-3 sentences — your overall assessment from your specialist perspective]
 KEY_FINDINGS:
 - [Finding 1]
 - [Finding 2]
 - [Finding 3 if needed]
-CONDITIONS: [If CONDITIONAL: what must be clarified before proceeding. If APPROVED or BLOCKED: NONE]
-BLOCKER: [If BLOCKED: the specific reason. Otherwise: NONE]
+CONDITIONS: [If CONDITIONAL: what the founder needs to confirm their direction on (1-2 questions max). If APPROVED: NONE]
+RESEARCH_BRIEF: [1-3 specific things the LINUP engineering team should investigate or validate during the build — compliance requirements, market assumptions, technical risks etc. Always provide this.]
 
-Be direct and honest. Do not hedge. A CONDITIONAL verdict means there is something genuinely unclear that affects viability. A BLOCKED verdict means there is a fundamental problem the founder must address before proceeding.`;
+VERDICT GUIDANCE:
+- APPROVED: The idea is viable and directionally sound. Use this even if there are unknowns — put them in RESEARCH_BRIEF.
+- CONDITIONAL: Only use this if there is a genuine ambiguity about the founder's INTENT or DIRECTION that would materially change what gets built. Not for knowledge gaps — those go in RESEARCH_BRIEF.
+- NEVER recommend stopping or blocking. Your job is to move ideas forward with the right preparation.`;
 }
 
 function buildQualityGatePrompt(
@@ -239,7 +244,7 @@ CRITICAL RESUBMISSION RULES:
 - If the founder's answers genuinely address the conditions raised, you MUST return APPROVED or at most one remaining CONDITIONAL question
 - Do NOT repeat questions the founder has already answered
 - Only return CONDITIONAL if there are genuinely NEW unresolved issues not addressed by the founder's answers
-- Only return BLOCKED if there is a fundamental problem that the answers reveal or confirm\n`
+- Only return CONDITIONAL if there are genuinely NEW unresolved direction questions not addressed by the founder's answers\n`
     : '';
 
   return `You are the Quality Gate — the final synthesiser on the LINUP Council.
@@ -251,20 +256,23 @@ ${JSON.stringify(ideaBrief, null, 2)}
 SPECIALIST VERDICTS:
 ${resultsText}
 
+YOUR ROLE: You are preparing this idea for development, not gatekeeping it. The council exists to ensure the engineering team has what it needs to build correctly — not to stop founders. Every idea that reaches you has already been validated enough to proceed. Your job is to determine whether the founder needs to clarify their direction first (CONDITIONAL) or whether the team can proceed immediately (APPROVED).
+
 DECISION RULES:
-- APPROVED: All or nearly all specialists approve, any conditions are minor clarifications
-- CONDITIONAL: One or more specialists have meaningful conditions that need founder input (max 5 questions)
-- BLOCKED: One or more specialists have identified a fundamental blocker that cannot be resolved by clarification alone
+- APPROVED: The idea is directionally clear enough to proceed to feature discovery. Unknowns and risks are documented in the research brief for the engineering team to address during the build.
+- CONDITIONAL: The founder needs to clarify their intended direction on 1-3 specific points that would materially change what gets built. Not for knowledge gaps — those are the engineering team's job.
+- NEVER output BLOCKED. If you feel strongly about a risk, document it in CONCERNS and RESEARCH_BRIEF instead.
 
 Produce your synthesis in this exact format:
-QUALITY_GATE_VERDICT: APPROVED | CONDITIONAL | BLOCKED
-OVERALL_ASSESSMENT: [3-4 sentences synthesising the key themes across all 12 verdicts]
+QUALITY_GATE_VERDICT: APPROVED | CONDITIONAL
+OVERALL_ASSESSMENT: [3-4 sentences — positive framing of what this idea is and why it has merit, followed by what the team will need to address]
 STRENGTHS:
-- [Top 2-3 genuine strengths identified across the council]
+- [Top 2-3 genuine strengths]
 CONCERNS:
-- [Top 2-3 genuine concerns, if any]
-CONDITIONAL_QUESTIONS: [If CONDITIONAL: up to 5 questions for the founder, one per line starting with Q:. If not CONDITIONAL: NONE]
-BLOCKED_REASON: [If BLOCKED: clear explanation of the fundamental problem. Otherwise: NONE]`;
+- [Top 2-3 risks or unknowns — framed as things the engineering team will investigate, not reasons to stop]
+RESEARCH_BRIEF:
+- [Top 3-5 specific things the LINUP team should research or validate during the build — regulatory requirements, competitor analysis, technical feasibility questions, market assumptions etc.]
+CONDITIONAL_QUESTIONS: [If CONDITIONAL: up to 3 founder direction questions, one per line starting with Q:. If APPROVED: NONE]`;
 }
 function parseCouncilMemberResult(content: string): {
   verdict: string;
@@ -420,11 +428,11 @@ export async function confirmIdeaBrief(
       : [];
     const blockedReason = blockedMatch && !blockedMatch[1]!.includes('NONE') ? blockedMatch[1]!.trim() : null;
 
-    const finalPhase = verdict === 'APPROVED'
+    // BLOCKED is no longer a valid verdict — treat it as CONDITIONAL if AI returns it anyway
+    const normalisedVerdict = (verdict === 'BLOCKED') ? 'CONDITIONAL' : verdict;
+    const finalPhase = normalisedVerdict === 'APPROVED'
       ? 'PHASE05_STARTING'
-      : verdict === 'CONDITIONAL'
-        ? 'AWAITING_FOUNDER_CONDITIONAL'
-        : 'BLOCKED';
+      : 'AWAITING_FOUNDER_CONDITIONAL';
 
     const state2 = await getCouncilState(projectId);
     const members2 = state2['members'] as Record<string, unknown>;
@@ -480,15 +488,15 @@ export async function confirmIdeaBrief(
       ...state2,
       members: members2,
       phase: finalPhase,
-      verdict,
-      quality_gate: { verdict, assessment, blockedReason },
+      verdict: normalisedVerdict,
+      quality_gate: { verdict: normalisedVerdict, assessment, blockedReason: null },
       conditional_questions: conditionalQuestions.length > 0 ? conditionalQuestions : null,
       conditional_questions_rich: conditionalQuestionsRich,
       completed_at: new Date().toISOString(),
     });
 
     // If APPROVED → immediately begin Phase 0.5
-    if (verdict === 'APPROVED') {
+    if (normalisedVerdict === 'APPROVED') {
       await runPhase05(projectId, ideaBrief);
     }
   } catch (err: any) {

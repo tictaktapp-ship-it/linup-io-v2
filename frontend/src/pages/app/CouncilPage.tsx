@@ -117,7 +117,7 @@ export default function CouncilPage() {
   // UI phase state
   const [uiPhase, setUiPhase] = useState<
     'CONCIERGE' | 'PIS' | 'BRIEF_CONFIRM' | 'COUNCIL' | 'CONDITIONAL' |
-    'BLOCKED' | 'PHASE05' | 'CHARTER_CONFIRM' | 'COMPLETE'
+    'PHASE05' | 'CHARTER_CONFIRM' | 'COMPLETE'
   >('CONCIERGE');
 
   // Chat state
@@ -609,18 +609,7 @@ export default function CouncilPage() {
             )}
 
             {/* Blocked */}
-            {uiPhase === 'BLOCKED' && councilState?.quality_gate?.blockedReason && (
-              <div className="council-blocked">
-                <h3 className="council-blocked__title">Why this idea was blocked</h3>
-                <p className="council-blocked__reason">{councilState.quality_gate.blockedReason}</p>
-                <button
-                  className="council-btn council-btn--primary"
-                  onClick={() => { setMessages([]); setPisHistory([]); setIdeaBrief(null); setUiPhase('PIS'); }}
-                >
-                  Revise and resubmit →
-                </button>
-              </div>
-            )}
+            
           </div>
         )}
 
