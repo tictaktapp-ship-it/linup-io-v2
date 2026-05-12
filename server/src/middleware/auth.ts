@@ -52,16 +52,6 @@ export async function requireAuth(
 
     const userId = request.user.sub;
 
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (profileError || !profile) {
-      return reply.status(401).send({ error: 'User not found' });
-    }
-
     const { data: membership } = await supabase
       .from('organisation_members')
       .select('organisation_id')
