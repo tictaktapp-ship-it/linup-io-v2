@@ -25,14 +25,6 @@ export async function councilRoutes(fastify: FastifyInstance): Promise<void> {
       .single();
     if (projErr || !project) return null;
 
-    const { data: member, error: memErr } = await supabase
-      .from('project_members')
-      .select('role')
-      .eq('project_id', projectId)
-      .eq('user_id', userId)
-      .single();
-    if (memErr || !member) return null;
-
     return project;
   }
 
