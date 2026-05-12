@@ -137,6 +137,7 @@ export default function CouncilPage() {
   // Conditional question answers
   const [conditionalAnswers, setConditionalAnswers] = useState<Record<number, { selected: string; freeText: string }>>({});
   const [resubmitting, setResubmitting] = useState(false);
+  const [topbarLogoFailed, setTopbarLogoFailed] = useState(false);
 
   // Scroll chat to bottom on new message
   useEffect(() => {
@@ -360,15 +361,11 @@ export default function CouncilPage() {
   return (
     <div className="council-page">
       <div className="council-topbar">
-        {(() => {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const [logoFailed, setLogoFailed] = React.useState(false);
-          return logoFailed ? (
-            <span className="council-topbar__logo">LINUP</span>
-          ) : (
-            <img src="/logo.png" alt="LINUP" style={{ height: '24px', width: 'auto', display: 'block' }} onError={() => setLogoFailed(true)} />
-          );
-        })()}
+        {topbarLogoFailed ? (
+          <span className="council-topbar__logo">LINUP</span>
+        ) : (
+          <img src="/logo.png" alt="LINUP" style={{ height: '24px', width: 'auto', display: 'block' }} onError={() => setTopbarLogoFailed(true)} />
+        )}
         <span className="council-topbar__project">{projectName}</span>
         <span className="council-topbar__phase">
           {uiPhase === 'CONCIERGE' && 'Getting started'}
