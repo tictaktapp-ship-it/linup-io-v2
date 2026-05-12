@@ -33,6 +33,7 @@ interface CouncilState {
   members?: Record<string, CouncilMember>;
   verdict?: string;
   conditional_questions?: string[];
+  conditional_questions_rich?: Array<{ question: string; options: string[] }> | null;
   quality_gate?: { verdict: string; assessment: string; blockedReason: string | null };
   idea_brief?: IdeaBrief;
   phase05?: {

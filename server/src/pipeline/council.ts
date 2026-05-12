@@ -430,6 +430,52 @@ export async function confirmIdeaBrief(
     const members2 = state2['members'] as Record<string, unknown>;
     members2[qgMember.id] = { status: 'COMPLETE', title: qgMember.title, verdict, assessment };
 
+    // Enrich conditional questions: rewrite into founder-friendly language with specific options
+    let conditionalQuestionsRich = null;
+    if (conditionalQuestions.length > 0) {
+      try {
+        const enrichPrompt = [
+          'You are helping a non-technical founder answer questions from an expert council review of their product idea.',
+          '',
+          'The council has raised ' + conditionalQuestions.length + ' conditional question(s).',
+          '',
+          'ORIGINAL COUNCIL QUESTIONS:',
+          conditionalQuestions.map((q, i) => (i + 1) + '. ' + q).join('\n'),
+          '',
+          'FOUNDER IDEA BRIEF:',
+          JSON.stringify(ideaBrief, null, 2),
+          '',
+          'Rewrite each question so that:',
+          '1. It is in plain conversational English a non-technical founder can understand',
+          '2. It asks about the founder\'s intent, direction, and plan — not technical proof',
+          '3. It is encouraging, not interrogative',
+          '4. LINUP will handle the research — the founder just needs to confirm their direction',
+          '',
+          'For each question generate exactly 4 answer options that are:',
+          '- Specific to THIS question and THIS idea (not generic)',
+          '- Written from the founder perspective (I have / I plan to / I intend to / I haven\'t yet)',
+          '- Ordered from most to least prepared',
+          '- Realistic options a real founder might actually choose',
+          '',
+          'Respond ONLY with a JSON array. No markdown, no explanation, no backticks.',
+          'Format:',
+          '[{"question":"...","options":["...","...","...","..."]}]',
+        ].join('\n');
+
+        const enrichMessages = [
+          { role: 'system', content: 'You are a product communication specialist. Output only valid JSON arrays.' },
+          { role: 'user', content: enrichPrompt },
+        ];
+        const enrichResponse = await callAIWithRetry('M', enrichMessages);
+        const enrichRaw = (enrichResponse.choices[0]?.message?.content ?? '').trim();
+        const enrichClean = enrichRaw.replace(/^[`]{0,3}json|[`]{0,3}$/g, '').trim();
+        conditionalQuestionsRich = JSON.parse(enrichClean);
+      } catch (enrichErr) {
+        console.error('Question enrichment failed (non-fatal):', enrichErr);
+        conditionalQuestionsRich = null;
+      }
+    }
+
     await saveCouncilState(projectId, {
       ...state2,
       members: members2,
@@ -437,6 +483,7 @@ export async function confirmIdeaBrief(
       verdict,
       quality_gate: { verdict, assessment, blockedReason },
       conditional_questions: conditionalQuestions.length > 0 ? conditionalQuestions : null,
+      conditional_questions_rich: conditionalQuestionsRich,
       completed_at: new Date().toISOString(),
     });
 
