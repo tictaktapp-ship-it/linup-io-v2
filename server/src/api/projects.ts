@@ -115,14 +115,68 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
   });
 
   // -- DELETE /api/projects/:id -------------------------------------------
+  // Blocks deletion if any artifacts have been downloaded/paid for.
+  // Resets free_project_used flag so org can create a new project.
   fastify.delete('/api/projects/:id', { preHandler: requireAuth }, async (request, reply) => {
     const { id } = request.params as { id: string };
     const { organisation_id } = request.profile;
-    const { error } = await supabase.from('projects').delete().eq('id', id).eq('organisation_id', organisation_id);
-    if (error) return reply.status(500).send({ error: 'Failed to delete project' });
+
+    // Verify project belongs to this org
+    const { data: project, error: projErr } = await supabase
+      .from('projects')
+      .select('id, app_download_paid')
+      .eq('id', id)
+      .eq('organisation_id', organisation_id)
+      .single();
+
+    if (projErr || !project) {
+      return reply.status(404).send({ error: 'Project not found' });
+    }
+
+    // Block if App Package has been paid/downloaded
+    if (project.app_download_paid) {
+      return reply.status(409).send({
+        error: 'This project cannot be deleted because the App Package has already been downloaded.',
+        code: 'ARTIFACTS_DOWNLOADED',
+      });
+    }
+
+    // Block if any per-artifact payments exist
+    const { data: payments } = await supabase
+      .from('artifact_payments')
+      .select('id')
+      .eq('project_id', id)
+      .eq('stripe_payment_status', 'succeeded')
+      .limit(1);
+
+    if (payments && payments.length > 0) {
+      return reply.status(409).send({
+        error: 'This project cannot be deleted because artifacts have already been downloaded.',
+        code: 'ARTIFACTS_DOWNLOADED',
+      });
+    }
+
+    // Safe to delete — remove stage_runs first, then project
     await supabase.from('stage_runs').delete().eq('project_id', id);
-    await supabase.from('organisations').update({ free_project_used: false }).eq('id', organisation_id);
-    return reply.status(200).send({ message: 'Deleted' });
+
+    const { error: deleteErr } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .eq('organisation_id', organisation_id);
+
+    if (deleteErr) {
+      fastify.log.error(deleteErr, 'DELETE /api/projects/:id failed');
+      return reply.status(500).send({ error: 'Failed to delete project' });
+    }
+
+    // Reset free tier flag so org can create a new project
+    await supabase
+      .from('organisations')
+      .update({ free_project_used: false })
+      .eq('id', organisation_id);
+
+    return reply.status(200).send({ ok: true });
   });
 
   // -- GET /api/projects/:id -----------------------------------------------

@@ -354,8 +354,23 @@ export function DashboardPage() {
   }
 
   async function handleDelete(id: string) {
-    await apiFetch('/api/projects/' + id, { method: 'DELETE' });
-    setProjects(prev => prev.filter(p => p.id !== id));
+    try {
+      const res = await apiFetch('/api/projects/' + id, { method: 'DELETE', credentials: 'include' });
+      if (res.status === 409) {
+        const body = await res.json().catch(() => ({}));
+        if (body.code === 'ARTIFACTS_DOWNLOADED') {
+          alert('This project cannot be deleted because artifacts have already been downloaded. Projects with downloaded artifacts are kept for your records.');
+          return;
+        }
+      }
+      if (!res.ok) {
+        alert('Failed to delete project. Please try again.');
+        return;
+      }
+      setProjects(prev => prev.filter(p => p.id !== id));
+    } catch {
+      alert('Could not reach the server. Please check your connection.');
+    }
   }
 
   return (
