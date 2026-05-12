@@ -282,6 +282,24 @@ function parseCouncilMemberResult(content: string): {
   };
 }
 
+// Per-project write lock — prevents concurrent getCouncilState/saveCouncilState
+// interleaving that causes member results to overwrite each other.
+const _councilLocks = new Map<string, Promise<void>>();
+
+async function withCouncilLock<T>(projectId: string, fn: () => Promise<T>): Promise<T> {
+  // Chain this operation onto the existing lock for this project
+  const prev = _councilLocks.get(projectId) ?? Promise.resolve();
+  let releaseLock!: () => void;
+  const next = new Promise<void>(resolve => { releaseLock = resolve; });
+  _councilLocks.set(projectId, prev.then(() => next));
+  await prev;
+  try {
+    return await fn();
+  } finally {
+    releaseLock();
+  }
+}
+
 export async function confirmIdeaBrief(
   projectId: string,
   ideaBrief: Record<string, unknown>
@@ -314,11 +332,13 @@ export async function confirmIdeaBrief(
   await Promise.all(
     specialists.map(async (member) => {
       try {
-        // Mark as RUNNING
-        const state = await getCouncilState(projectId);
-        const members = state['members'] as Record<string, unknown>;
-        members[member.id] = { ...members[member.id] as object, status: 'RUNNING' };
-        await saveCouncilState(projectId, { ...state, members });
+        // Mark as RUNNING (serialised)
+        await withCouncilLock(projectId, async () => {
+          const state = await getCouncilState(projectId);
+          const members = state['members'] as Record<string, unknown>;
+          members[member.id] = { ...members[member.id] as object, status: 'RUNNING' };
+          await saveCouncilState(projectId, { ...state, members });
+        });
 
         const prompt = buildCouncilMemberPrompt(member, ideaBrief);
         const messages = [
@@ -326,18 +346,20 @@ export async function confirmIdeaBrief(
           { role: 'user' as const, content: prompt },
         ];
         const response = await callAIWithRetry(member.tier as 'S' | 'M' | 'W', messages as any);
-        const content = response.choices[0]?.message.content ?? '';
-        const parsed = parseCouncilMemberResult(content);
+        const aiContent = response.choices[0]?.message.content ?? '';
+        const parsed = parseCouncilMemberResult(aiContent);
 
-        // Mark as COMPLETE and save result
-        const state2 = await getCouncilState(projectId);
-        const members2 = state2['members'] as Record<string, unknown>;
-        members2[member.id] = {
-          status: 'COMPLETE',
-          title: member.title,
-          ...parsed,
-        };
-        await saveCouncilState(projectId, { ...state2, members: members2 });
+        // Mark as COMPLETE and save result (serialised)
+        await withCouncilLock(projectId, async () => {
+          const state2 = await getCouncilState(projectId);
+          const members2 = state2['members'] as Record<string, unknown>;
+          members2[member.id] = {
+            status: 'COMPLETE',
+            title: member.title,
+            ...parsed,
+          };
+          await saveCouncilState(projectId, { ...state2, members: members2 });
+        });
 
         specialistResults.push({
           id: member.id,
@@ -348,10 +370,12 @@ export async function confirmIdeaBrief(
           blocker: parsed.blocker,
         });
       } catch (err: any) {
-        const state = await getCouncilState(projectId);
-        const members = state['members'] as Record<string, unknown>;
-        members[member.id] = { ...members[member.id] as object, status: 'ERROR', error: err.message };
-        await saveCouncilState(projectId, { ...state, members });
+        await withCouncilLock(projectId, async () => {
+          const state = await getCouncilState(projectId);
+          const members = state['members'] as Record<string, unknown>;
+          members[member.id] = { ...members[member.id] as object, status: 'ERROR', error: (err as Error).message };
+          await saveCouncilState(projectId, { ...state, members });
+        });
       }
     })
   );

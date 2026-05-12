@@ -19,7 +19,6 @@ export function NewProjectPage() {
     setSubmitting(true);
     setError(null);
     setGated(false);
-
     try {
       const res = await apiFetch('/api/projects', {
         method: 'POST',
@@ -27,23 +26,16 @@ export function NewProjectPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), description: description.trim() || null }),
       });
-
       if (res.status === 401) { navigate('/login', { replace: true }); return; }
-
       if (res.status === 409) {
         const body = await res.json();
-        if (body.code === 'FREE_PROJECT_USED') {
-          setGated(true);
-          return;
-        }
+        if (body.code === 'FREE_PROJECT_USED') { setGated(true); return; }
       }
-
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         setError(body.message ?? 'Failed to create project. Please try again.');
         return;
       }
-
       const data = await res.json();
       navigate('/app/project/' + data.project.id + '/council', { replace: true });
     } catch {
@@ -53,7 +45,7 @@ export function NewProjectPage() {
     }
   }
 
-  // ── Free project gate state ─────────────────────────────────────────────────
+  // --- Free project gate -------------------------------------------------------
   if (gated) {
     return (
       <div style={{
@@ -65,8 +57,8 @@ export function NewProjectPage() {
         gap: 'var(--space-6)',
       }}>
         <div style={{
-          background: 'var(--color-dark-1)',
-          border: '1px solid var(--color-border-dark)',
+          background: '#FFFFFF',
+          border: '1px solid var(--color-border)',
           borderRadius: 'var(--radius-xl)',
           padding: 'var(--space-8)',
           display: 'flex',
@@ -74,36 +66,36 @@ export function NewProjectPage() {
           gap: 'var(--space-5)',
           alignItems: 'center',
           textAlign: 'center',
+          boxShadow: 'var(--shadow-subtle)',
         }}>
           <div style={{
             width: '52px',
             height: '52px',
             borderRadius: 'var(--radius-xl)',
-            background: 'var(--color-dark-2)',
+            background: '#F4F4F2',
+            border: '1px solid var(--color-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}>
             <Lock size={24} strokeWidth={1.5} color="var(--color-brand)" />
           </div>
-
           <div>
             <div style={{
               fontSize: '18px',
               fontWeight: 600,
-              color: 'var(--color-text-on-dark)',
+              color: 'var(--color-text-primary)',
               marginBottom: 'var(--space-2)',
               letterSpacing: '-0.01em',
             }}>Your free project is in use</div>
             <div style={{
               fontSize: '14px',
-              color: 'var(--color-text-on-dark-2)',
+              color: 'var(--color-text-secondary)',
               lineHeight: 1.6,
             }}>
               The free tier includes one project. Upgrade to Pro for unlimited projects, priority processing, and all downloads included.
             </div>
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', width: '100%' }}>
             <button
               onClick={() => navigate('/app/billing')}
@@ -128,7 +120,7 @@ export function NewProjectPage() {
               style={{
                 height: '36px',
                 background: 'transparent',
-                color: 'var(--color-text-on-dark-2)',
+                color: 'var(--color-text-secondary)',
                 border: 'none',
                 borderRadius: 'var(--radius-lg)',
                 fontSize: '13px',
@@ -143,7 +135,7 @@ export function NewProjectPage() {
     );
   }
 
-  // ── Create form ─────────────────────────────────────────────────────────────
+  // --- Create form -------------------------------------------------------------
   return (
     <div style={{
       maxWidth: '560px',
@@ -162,7 +154,7 @@ export function NewProjectPage() {
           gap: 'var(--space-2)',
           background: 'transparent',
           border: 'none',
-          color: 'var(--color-text-on-dark-2)',
+          color: 'var(--color-text-secondary)',
           fontSize: '13px',
           cursor: 'pointer',
           padding: 0,
@@ -175,25 +167,26 @@ export function NewProjectPage() {
 
       {/* Card */}
       <div style={{
-        background: 'var(--color-dark-1)',
-        border: '1px solid var(--color-border-dark)',
+        background: '#FFFFFF',
+        border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-xl)',
         padding: 'var(--space-8)',
         display: 'flex',
         flexDirection: 'column',
         gap: 'var(--space-6)',
+        boxShadow: 'var(--shadow-subtle)',
       }}>
         <div>
           <h1 style={{
             fontSize: '24px',
             fontWeight: 600,
-            color: 'var(--color-text-on-dark)',
+            color: 'var(--color-text-primary)',
             letterSpacing: '-0.02em',
             marginBottom: 'var(--space-2)',
           }}>New project</h1>
           <p style={{
             fontSize: '14px',
-            color: 'var(--color-text-on-dark-2)',
+            color: 'var(--color-text-secondary)',
             lineHeight: 1.6,
           }}>
             Give your project a name. Your AI engineering department will take it from there.
@@ -202,11 +195,7 @@ export function NewProjectPage() {
 
         {/* Project name */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <label style={{
-            fontSize: '13px',
-            fontWeight: 500,
-            color: 'var(--color-text-on-dark)',
-          }}>
+          <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
             Project name <span style={{ color: 'var(--color-error)' }}>*</span>
           </label>
           <input
@@ -220,36 +209,33 @@ export function NewProjectPage() {
             style={{
               height: '40px',
               padding: '0 var(--space-4)',
-              background: 'var(--color-dark-2)',
-              border: '1px solid var(--color-border-dark)',
+              background: '#FFFFFF',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)',
-              color: 'var(--color-text-on-dark)',
+              color: 'var(--color-text-primary)',
               fontSize: '14px',
               outline: 'none',
               transition: 'border-color 120ms ease, box-shadow 120ms ease',
             }}
             onFocus={e => {
-              e.target.style.borderColor = 'var(--color-border-focus)';
+              e.target.style.borderColor = 'var(--color-brand)';
               e.target.style.boxShadow = 'var(--shadow-focus)';
             }}
             onBlur={e => {
-              e.target.style.borderColor = 'var(--color-border-dark)';
+              e.target.style.borderColor = 'var(--color-border)';
               e.target.style.boxShadow = 'none';
             }}
           />
-          <div style={{ fontSize: '11px', color: 'var(--color-text-on-dark-2)', textAlign: 'right' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', textAlign: 'right' }}>
             {name.length}/80
           </div>
         </div>
 
         {/* Description */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-          <label style={{
-            fontSize: '13px',
-            fontWeight: 500,
-            color: 'var(--color-text-on-dark)',
-          }}>
-            Brief description <span style={{ color: 'var(--color-text-on-dark-2)', fontWeight: 400 }}>(optional)</span>
+          <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
+            Brief description{' '}
+            <span style={{ color: 'var(--color-text-tertiary)', fontWeight: 400 }}>(optional)</span>
           </label>
           <textarea
             value={description}
@@ -259,10 +245,10 @@ export function NewProjectPage() {
             rows={3}
             style={{
               padding: 'var(--space-3) var(--space-4)',
-              background: 'var(--color-dark-2)',
-              border: '1px solid var(--color-border-dark)',
+              background: '#FFFFFF',
+              border: '1px solid var(--color-border)',
               borderRadius: 'var(--radius-md)',
-              color: 'var(--color-text-on-dark)',
+              color: 'var(--color-text-primary)',
               fontSize: '14px',
               outline: 'none',
               resize: 'vertical',
@@ -271,15 +257,15 @@ export function NewProjectPage() {
               fontFamily: 'var(--font-sans)',
             }}
             onFocus={e => {
-              e.target.style.borderColor = 'var(--color-border-focus)';
+              e.target.style.borderColor = 'var(--color-brand)';
               e.target.style.boxShadow = 'var(--shadow-focus)';
             }}
             onBlur={e => {
-              e.target.style.borderColor = 'var(--color-border-dark)';
+              e.target.style.borderColor = 'var(--color-border)';
               e.target.style.boxShadow = 'none';
             }}
           />
-          <div style={{ fontSize: '11px', color: 'var(--color-text-on-dark-2)', textAlign: 'right' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', textAlign: 'right' }}>
             {description.length}/400
           </div>
         </div>
@@ -291,7 +277,7 @@ export function NewProjectPage() {
             alignItems: 'center',
             gap: 'var(--space-2)',
             padding: 'var(--space-3) var(--space-4)',
-            background: 'rgba(220,38,38,0.08)',
+            background: 'var(--color-error-bg)',
             border: '1px solid rgba(220,38,38,0.2)',
             borderRadius: 'var(--radius-md)',
             color: 'var(--color-error)',
@@ -308,8 +294,8 @@ export function NewProjectPage() {
           disabled={!canSubmit}
           style={{
             height: '44px',
-            background: canSubmit ? 'var(--color-brand)' : 'var(--color-dark-3)',
-            color: canSubmit ? '#FFFFFF' : 'var(--color-text-on-dark-2)',
+            background: canSubmit ? 'var(--color-brand)' : '#EBEBEA',
+            color: canSubmit ? '#FFFFFF' : 'var(--color-text-tertiary)',
             border: 'none',
             borderRadius: 'var(--radius-lg)',
             fontSize: '14px',
@@ -336,10 +322,7 @@ export function NewProjectPage() {
       </div>
 
       <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );
