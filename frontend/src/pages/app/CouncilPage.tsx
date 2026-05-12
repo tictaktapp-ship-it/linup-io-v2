@@ -120,6 +120,8 @@ export default function CouncilPage() {
     'PHASE05' | 'CHARTER_CONFIRM' | 'COMPLETE'
   >('PIS');
 
+  const [pageLoaded, setPageLoaded] = useState(false);
+
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -158,8 +160,10 @@ export default function CouncilPage() {
           // Resume from existing council_state if present
           if (data.council_state) {
             resumeFromState(data.council_state as CouncilState);
+            setPageLoaded(true);
           } else {
             // Fresh project — go straight to PIS
+            setPageLoaded(true);
             sendPisOpener();
           }
         }
@@ -385,6 +389,12 @@ export default function CouncilPage() {
       </div>
 
       <div className="council-body">
+        {!pageLoaded && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--color-text-tertiary)', fontSize: '14px' }}>
+            Loading…
+          </div>
+        )}
+        {pageLoaded && (<>
 
         {/* ── CONCIERGE + PIS chat panel ── */}
         {(uiPhase === 'PIS' || uiPhase === 'BRIEF_CONFIRM') && (
@@ -762,6 +772,7 @@ export default function CouncilPage() {
           </div>
         )}
 
+        </>)}
       </div>
     </div>
   );
