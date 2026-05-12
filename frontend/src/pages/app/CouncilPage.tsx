@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { apiFetch } from '../../lib/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
@@ -222,6 +222,24 @@ export default function CouncilPage() {
     }
   }
 
+  // Send PIS opening message (replaces concierge — PIS introduces herself directly)
+  async function sendPisOpener() {
+    setSending(true);
+    try {
+      const res = await apiFetch('/api/council/pis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ projectId, message: '', history: [] }),
+      });
+      const data = await res.json();
+      setMessages([{ role: 'assistant', content: data.reply }]);
+      setPisHistory([{ role: 'assistant', content: data.reply }]);
+    } finally {
+      setSending(false);
+    }
+  }
+
   async function sendConciergeMessage() {
     if (!inputValue.trim() || sending) return;
     const userMsg = inputValue.trim();
@@ -342,7 +360,15 @@ export default function CouncilPage() {
   return (
     <div className="council-page">
       <div className="council-topbar">
-        <span className="council-topbar__logo">LINUP</span>
+        {(() => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const [logoFailed, setLogoFailed] = React.useState(false);
+          return logoFailed ? (
+            <span className="council-topbar__logo">LINUP</span>
+          ) : (
+            <img src="/logo.png" alt="LINUP" style={{ height: '24px', width: 'auto', display: 'block' }} onError={() => setLogoFailed(true)} />
+          );
+        })()}
         <span className="council-topbar__project">{projectName}</span>
         <span className="council-topbar__phase">
           {uiPhase === 'CONCIERGE' && 'Getting started'}
@@ -360,7 +386,7 @@ export default function CouncilPage() {
       <div className="council-body">
 
         {/* ── CONCIERGE + PIS chat panel ── */}
-        {(uiPhase === 'CONCIERGE' || uiPhase === 'PIS' || uiPhase === 'BRIEF_CONFIRM') && (
+        {(uiPhase === 'PIS' || uiPhase === 'BRIEF_CONFIRM') && (
           <div className="council-chat-layout">
             {/* Left: chat */}
             <div className="council-chat">
@@ -400,7 +426,7 @@ export default function CouncilPage() {
                   <button
                     className="council-chat__send"
                     disabled={sending || !inputValue.trim()}
-                    onClick={uiPhase === 'CONCIERGE' ? sendConciergeMessage : sendPisMessage}
+                    onClick={sendPisMessage}
                   >
                     Send →
                   </button>
