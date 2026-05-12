@@ -152,7 +152,7 @@ export default function CouncilPage() {
   async function sendConciergeOpener() {
     setSending(true);
     try {
-      const res = await apiFetch('/council/concierge', {
+      const res = await apiFetch('/api/council/concierge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -174,7 +174,7 @@ export default function CouncilPage() {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setSending(true);
     try {
-      const res = await apiFetch('/council/concierge', {
+      const res = await apiFetch('/api/council/concierge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -203,7 +203,7 @@ export default function CouncilPage() {
     const newHistory = [...pisHistory, { role: 'user', content: userMsg }];
 
     try {
-      const res = await apiFetch('/council/pis', {
+      const res = await apiFetch('/api/council/pis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -227,7 +227,7 @@ export default function CouncilPage() {
     if (!ideaBrief) return;
     setSending(true);
     try {
-      await apiFetch('/council/confirm-brief', {
+      await apiFetch('/api/council/confirm-brief', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -244,7 +244,7 @@ export default function CouncilPage() {
   async function confirmCharter() {
     setSending(true);
     try {
-      await apiFetch('/council/confirm-charter', {
+      await apiFetch('/api/council/confirm-charter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
