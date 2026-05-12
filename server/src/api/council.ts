@@ -8,6 +8,7 @@ import {
   getCouncilStatus,
   getPhase05Status,
   confirmFeatureCharter,
+  handleConditionalResubmit,
 } from '../pipeline/council.js';
 
 // ── Phase 0 Council API (Doc 8D Phase 9, Doc 5 Screen 6) ─────────────────────
@@ -181,6 +182,31 @@ export async function councilRoutes(fastify: FastifyInstance): Promise<void> {
   // Founder confirms the Approved Feature Charter → Stage 1 begins.
   // Body: { projectId: string }
   // Returns: { ok: true } — Stage 1 queued in stage_runs
+  // -- POST /api/council/resubmit-conditional ------------------------------------
+  // Founder submits answers to conditional questions -> re-runs council.
+  // Body: { projectId: string; answers: Array<{question,selectedOption,freeText}> }
+  fastify.post('/api/council/resubmit-conditional', { preHandler: requireAuth }, async (request, reply) => {
+    const { id: userId, organisation_id } = request.profile;
+    const body = request.body as {
+      projectId?: string;
+      answers?: Array<{ question: string; selectedOption: string; freeText: string }>;
+    };
+
+    if (!body.projectId || !Array.isArray(body.answers) || body.answers.length === 0) {
+      return reply.status(400).send({ error: 'projectId and answers are required' });
+    }
+
+    const project = await assertMember(body.projectId, userId, organisation_id);
+    if (!project) return reply.status(403).send({ error: 'FORBIDDEN' });
+
+    // Trigger resubmit async (non-blocking)
+    handleConditionalResubmit(body.projectId, body.answers).catch((err: Error) => {
+      fastify.log.error(err, 'council/resubmit-conditional failed for ' + body.projectId);
+    });
+
+    return reply.send({ ok: true });
+  });
+
   fastify.post('/api/council/confirm-charter', { preHandler: requireAuth }, async (request, reply) => {
     const { id: userId, organisation_id } = request.profile;
     const body = request.body as { projectId?: string };

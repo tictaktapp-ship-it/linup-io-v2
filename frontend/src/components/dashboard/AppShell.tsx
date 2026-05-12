@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Plus, Settings, CreditCard, LogOut } from 'lucide-react';
@@ -5,6 +6,7 @@ import { LayoutDashboard, Plus, Settings, CreditCard, LogOut } from 'lucide-reac
 // --- TopBar -------------------------------------------------------------------
 function TopBar() {
   const navigate = useNavigate();
+  const [logoFailed, setLogoFailed] = useState(false);
 
   async function handleLogout() {
     await apiFetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -14,9 +16,7 @@ function TopBar() {
   return (
     <header style={{
       position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
+      top: 0, left: 0, right: 0,
       height: 'var(--topbar-height)',
       background: '#FFFFFF',
       borderBottom: '1px solid var(--color-border)',
@@ -28,20 +28,21 @@ function TopBar() {
     }}>
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-        <img
-          src="/logo.png"
-          alt="LINUP"
-          style={{ height: '24px', width: 'auto', display: 'block' }}
-          onError={(e) => {
-            // Fallback to text if image missing
-            const el = e.currentTarget;
-            el.style.display = 'none';
-            const span = document.createElement('span');
-            span.textContent = 'LINUP';
-            span.style.cssText = 'font-weight:800;font-size:15px;letter-spacing:-0.03em;color:#8C00B4;';
-            el.parentElement?.appendChild(span);
-          }}
-        />
+        {logoFailed ? (
+          <span style={{
+            fontWeight: 800,
+            fontSize: '15px',
+            letterSpacing: '-0.03em',
+            color: 'var(--color-brand)',
+          }}>LINUP</span>
+        ) : (
+          <img
+            src="/logo.png"
+            alt="LINUP"
+            style={{ height: '22px', width: 'auto', display: 'block' }}
+            onError={() => setLogoFailed(true)}
+          />
+        )}
       </div>
 
       {/* Sign out */}
@@ -87,10 +88,7 @@ const navLinkBase: React.CSSProperties = {
 };
 
 function SidebarNavLink({ to, icon, label, end }: {
-  to: string;
-  icon: React.ReactNode;
-  label: string;
-  end?: boolean;
+  to: string; icon: React.ReactNode; label: string; end?: boolean;
 }) {
   return (
     <NavLink
@@ -113,8 +111,7 @@ function Sidebar() {
     <nav style={{
       position: 'fixed',
       top: 'var(--topbar-height)',
-      left: 0,
-      bottom: 0,
+      left: 0, bottom: 0,
       width: 'var(--sidebar-width)',
       background: '#FFFFFF',
       borderRight: '1px solid var(--color-border)',
@@ -125,49 +122,26 @@ function Sidebar() {
       overflowY: 'auto',
     }}>
       <div style={{
-        fontSize: '11px',
-        fontWeight: 600,
-        letterSpacing: '0.06em',
+        fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em',
         color: 'var(--color-text-tertiary)',
         padding: 'var(--space-2) var(--space-4)',
-        textTransform: 'uppercase',
-        marginBottom: 'var(--space-1)',
+        textTransform: 'uppercase', marginBottom: 'var(--space-1)',
       }}>Projects</div>
 
-      <SidebarNavLink
-        to="/app"
-        end
-        icon={<LayoutDashboard size={16} strokeWidth={1.5} />}
-        label="Dashboard"
-      />
-      <SidebarNavLink
-        to="/app/new"
-        icon={<Plus size={16} strokeWidth={1.5} />}
-        label="New project"
-      />
+      <SidebarNavLink to="/app" end icon={<LayoutDashboard size={16} strokeWidth={1.5} />} label="Dashboard" />
+      <SidebarNavLink to="/app/new" icon={<Plus size={16} strokeWidth={1.5} />} label="New project" />
 
       <div style={{ flex: 1 }} />
 
       <div style={{
-        fontSize: '11px',
-        fontWeight: 600,
-        letterSpacing: '0.06em',
+        fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em',
         color: 'var(--color-text-tertiary)',
         padding: 'var(--space-2) var(--space-4)',
-        textTransform: 'uppercase',
-        marginBottom: 'var(--space-1)',
+        textTransform: 'uppercase', marginBottom: 'var(--space-1)',
       }}>Account</div>
 
-      <SidebarNavLink
-        to="/app/settings"
-        icon={<Settings size={16} strokeWidth={1.5} />}
-        label="Settings"
-      />
-      <SidebarNavLink
-        to="/app/billing"
-        icon={<CreditCard size={16} strokeWidth={1.5} />}
-        label="Billing"
-      />
+      <SidebarNavLink to="/app/settings" icon={<Settings size={16} strokeWidth={1.5} />} label="Settings" />
+      <SidebarNavLink to="/app/billing" icon={<CreditCard size={16} strokeWidth={1.5} />} label="Billing" />
     </nav>
   );
 }
@@ -175,20 +149,14 @@ function Sidebar() {
 // --- AppShell -----------------------------------------------------------------
 export function AppShell() {
   return (
-    <div style={{
-      width: '100%',
-      height: '100vh',
-      overflow: 'hidden',
-      background: '#F9FAFB',
-    }}>
+    <div style={{ width: '100%', height: '100vh', overflow: 'hidden', background: '#F9FAFB' }}>
       <TopBar />
       <Sidebar />
       <main style={{
         position: 'fixed',
         top: 'var(--topbar-height)',
         left: 'var(--sidebar-width)',
-        right: 0,
-        bottom: 0,
+        right: 0, bottom: 0,
         overflowY: 'auto',
         background: '#F9FAFB',
         padding: 'var(--space-8)',

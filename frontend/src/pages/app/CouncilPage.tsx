@@ -58,6 +58,57 @@ const API = (path: string) => (import.meta.env.VITE_API_URL as string) + '/api' 
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
+// Generate structured answer options for a conditional question
+function generateConditionalOptions(question: string): string[] {
+  const q = question.toLowerCase();
+  if (q.includes('evidence') || q.includes('data') || q.includes('validation') || q.includes('survey') || q.includes('research')) {
+    return [
+      'Yes — I have existing data or research I can reference',
+      'Partially — I have informal evidence but nothing formal yet',
+      'Not yet — but I can gather this before launch',
+      'No — I am currently relying on assumption and market intuition',
+    ];
+  }
+  if (q.includes('revenue') || q.includes('monetis') || q.includes('pricing') || q.includes('business model')) {
+    return [
+      'Subscription with clear pricing tiers already defined',
+      'Transaction or usage-based fee model',
+      'Freemium with a paid upgrade path',
+      'Still exploring — open to the best model for the market',
+    ];
+  }
+  if (q.includes('compli') || q.includes('regulat') || q.includes('legal') || q.includes('gdpr') || q.includes('coppa')) {
+    return [
+      'Yes — I have researched this and have a compliance plan',
+      'Partially — I am aware of requirements but need specialist input',
+      'I will address this before launch with legal help',
+      'Lower risk for my specific use case and geography',
+    ];
+  }
+  if (q.includes('compet') || q.includes('differentiat') || q.includes('unique') || q.includes('alternative')) {
+    return [
+      'Strong differentiation — clear unique value competitors lack',
+      'Some differentiation — better UX or pricing than alternatives',
+      'Niche focus — serving an underserved segment of existing market',
+      'Still developing — the differentiation needs more definition',
+    ];
+  }
+  if (q.includes('user') || q.includes('customer') || q.includes('audience') || q.includes('target')) {
+    return [
+      'Very specific — I have a well-defined primary user persona',
+      'Fairly clear — I know the segment but not every detail',
+      'Broad — targeting multiple user types initially',
+      'Still refining — I need more discovery conversations',
+    ];
+  }
+  return [
+    'Fully addressed — I have a clear and tested answer',
+    'Mostly addressed — solid thinking with some gaps to fill',
+    'Partially addressed — I have a direction but need to develop it',
+    'Not yet addressed — this is a genuine open question for me',
+  ];
+}
+
 export default function CouncilPage() {
   const { id: projectId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -82,6 +133,9 @@ export default function CouncilPage() {
   // Council state (live via Realtime)
   const [councilState, setCouncilState] = useState<CouncilState | null>(null);
   const [projectName, setProjectName] = useState('');
+  // Conditional question answers
+  const [conditionalAnswers, setConditionalAnswers] = useState<Record<number, { selected: string; freeText: string }>>({});
+  const [resubmitting, setResubmitting] = useState(false);
 
   // Scroll chat to bottom on new message
   useEffect(() => {
@@ -480,24 +534,76 @@ export default function CouncilPage() {
               </div>
             )}
 
-            {/* Conditional questions */}
+            {/* Conditional questions -- interactive form */}
             {uiPhase === 'CONDITIONAL' && councilState?.conditional_questions && (
               <div className="council-conditional">
                 <h3 className="council-conditional__title">Questions for you</h3>
-                <ol className="council-conditional__list">
-                  {councilState.conditional_questions.map((q, i) => (
-                    <li key={i} className="council-conditional__item">{q}</li>
-                  ))}
-                </ol>
-                <p className="council-conditional__hint">
-                  Revise your Idea Brief to address these, then resubmit.
+                <p className="council-conditional__hint" style={{ marginBottom: '8px' }}>
+                  Answer each question below. Your answers will be added to your brief and the Council will re-run automatically.
                 </p>
-                <button
-                  className="council-btn council-btn--primary"
-                  onClick={() => { setMessages([]); setPisHistory([]); setIdeaBrief(null); setUiPhase('PIS'); }}
-                >
-                  Revise and resubmit →
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '8px' }}>
+                  {councilState.conditional_questions.map((q, i) => {
+                    const options = generateConditionalOptions(q);
+                    const ans = conditionalAnswers[i] ?? { selected: '', freeText: '' };
+                    return (
+                      <div key={i} style={{ background: '#F9FAFB', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                          {i + 1}. {q}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {options.map((opt, oi) => (
+                            <label key={oi} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', border: '1px solid ' + (ans.selected === opt ? 'var(--color-brand)' : 'var(--color-border)'), borderRadius: '6px', background: ans.selected === opt ? 'rgba(140,0,180,0.05)' : '#FFFFFF', cursor: 'pointer', fontSize: '13px', color: 'var(--color-text-primary)', transition: 'border-color 0.15s' }}>
+                              <input type="radio" name={'q-' + i} value={opt} checked={ans.selected === opt}
+                                onChange={() => setConditionalAnswers(prev => ({ ...prev, [i]: { ...(prev[i] ?? { freeText: '' }), selected: opt } }))}
+                                style={{ accentColor: 'var(--color-brand)', marginTop: '2px', flexShrink: 0 }}
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Additional detail (optional)</label>
+                          <textarea rows={2} placeholder="Add any specifics or context..."
+                            value={ans.freeText}
+                            onChange={e => setConditionalAnswers(prev => ({ ...prev, [i]: { ...(prev[i] ?? { selected: '' }), freeText: e.target.value } }))}
+                            style={{ padding: '8px 10px', background: '#FFFFFF', border: '1px solid var(--color-border)', borderRadius: '6px', color: 'var(--color-text-primary)', fontSize: '13px', resize: 'vertical', fontFamily: 'var(--font-sans)', outline: 'none', lineHeight: 1.5 }}
+                            onFocus={e => { e.target.style.borderColor = 'var(--color-brand)'; }}
+                            onBlur={e => { e.target.style.borderColor = 'var(--color-border)'; }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
+                  <button className="council-btn council-btn--primary"
+                    disabled={resubmitting || Object.keys(conditionalAnswers).length < (councilState.conditional_questions?.length ?? 0)}
+                    onClick={async () => {
+                      if (!councilState?.conditional_questions) return;
+                      setResubmitting(true);
+                      try {
+                        const answers = councilState.conditional_questions.map((q, i) => ({
+                          question: q,
+                          selectedOption: conditionalAnswers[i]?.selected ?? '',
+                          freeText: conditionalAnswers[i]?.freeText ?? '',
+                        }));
+                        await apiFetch('/api/council/resubmit-conditional', {
+                          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                          body: JSON.stringify({ projectId, answers }),
+                        });
+                        setConditionalAnswers({});
+                        setUiPhase('COUNCIL');
+                      } finally { setResubmitting(false); }
+                    }}
+                  >
+                    {resubmitting ? 'Resubmitting...' : 'Submit answers and re-run Council'}
+                  </button>
+                  <button className="council-btn council-btn--ghost" disabled={resubmitting}
+                    onClick={() => { setMessages([]); setPisHistory([]); setIdeaBrief(null); setConditionalAnswers({}); setUiPhase('PIS'); }}
+                  >
+                    Revise brief instead
+                  </button>
+                </div>
               </div>
             )}
 

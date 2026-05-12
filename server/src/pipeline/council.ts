@@ -615,3 +615,31 @@ export async function confirmFeatureCharter(projectId: string): Promise<void> {
     .eq('project_id', projectId)
     .eq('stage', 1);
 }
+// -- Conditional resubmit (founder answers conditional questions) --------------
+// Merges answers into the existing idea_brief, resets council state, re-runs.
+export async function handleConditionalResubmit(
+  projectId: string,
+  answers: Array<{ question: string; selectedOption: string; freeText: string }>
+): Promise<void> {
+  const state = await getCouncilState(projectId);
+
+  if (state['phase'] !== 'AWAITING_FOUNDER_CONDITIONAL') {
+    throw new Error('Not in conditional phase — current phase: ' + state['phase']);
+  }
+
+  const existingBrief = (state['idea_brief'] as Record<string, unknown>) ?? {};
+
+  // Build an enriched brief that appends the founder's answers
+  const answersText = answers
+    .map((a, i) => `Q${i + 1}: ${a.question}\nAnswer: ${a.selectedOption}${a.freeText ? '\nDetail: ' + a.freeText : ''}`)
+    .join('\n\n');
+
+  const enrichedBrief: Record<string, unknown> = {
+    ...existingBrief,
+    founder_conditional_answers: answersText,
+    resubmitted_at: new Date().toISOString(),
+  };
+
+  // Re-run the full council with the enriched brief
+  await confirmIdeaBrief(projectId, enrichedBrief);
+}
