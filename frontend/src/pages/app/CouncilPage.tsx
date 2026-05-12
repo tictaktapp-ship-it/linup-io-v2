@@ -156,6 +156,7 @@ export default function CouncilPage() {
       .single()
       .then(({ data }) => {
         if (data) {
+          console.log('[CouncilPage] project loaded, name=', data.name, 'has council_state=', !!data.council_state, 'phase=', (data.council_state as any)?.phase);
           setProjectName(data.name ?? '');
           // Resume from existing council_state if present
           if (data.council_state) {
@@ -191,12 +192,14 @@ export default function CouncilPage() {
   }, [projectId]);
 
   function resumeFromState(state: CouncilState) {
+    console.log('[CouncilPage] resumeFromState called, phase=', state?.phase);
     setCouncilState(state);
     syncUiPhaseFromState(state);
   }
 
   function syncUiPhaseFromState(state: CouncilState) {
     const phase = state.phase;
+    console.log('[CouncilPage] syncUiPhaseFromState called, phase=', phase, 'uiPhase=', uiPhase);
     if (!phase || phase === 'CONCIERGE') return;
     if (phase === 'PIS') { setUiPhase('PIS'); return; }
     if (phase === 'COUNCIL_RUNNING') { setUiPhase('COUNCIL'); return; }
@@ -389,6 +392,9 @@ export default function CouncilPage() {
       </div>
 
       <div className="council-body">
+        <div style={{ fontSize: '11px', color: '#8A8A82', padding: '4px 8px', background: '#F9FAFB', borderBottom: '1px solid #E0E0DE', fontFamily: 'monospace' }}>
+          phase: {uiPhase} | loaded: {pageLoaded ? 'yes' : 'no'} | councilPhase: {councilState?.phase ?? 'none'} | msgs: {messages.length}
+        </div>
         {!pageLoaded && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--color-text-tertiary)', fontSize: '14px', padding: '40px' }}>
             Loading…
