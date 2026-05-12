@@ -39,7 +39,7 @@ function TopBar() {
           <img
             src="/logo.png"
             alt="LINUP"
-            style={{ height: '22px', width: 'auto', display: 'block' }}
+            style={{ height: '28px', width: 'auto', display: 'block', maxWidth: '120px' }}
             onError={() => setLogoFailed(true)}
           />
         )}

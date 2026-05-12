@@ -9,7 +9,7 @@ export function MarketingFooter() {
         {logoFailed ? (
           <span style={{ fontWeight: 800, fontSize: '16px', letterSpacing: '-0.02em', color: '#8C00B4' }}>LINUP</span>
         ) : (
-          <img src="/logo.png" alt="LINUP" style={{ height: '28px', width: 'auto', display: 'block' }} onError={() => setLogoFailed(true)} />
+          <img src="/logo.png" alt="LINUP" style={{ height: '32px', width: 'auto', display: 'block', maxWidth: '140px' }} onError={() => setLogoFailed(true)} />
         )}
       </Link>
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
