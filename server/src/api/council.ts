@@ -41,9 +41,10 @@ export async function councilRoutes(fastify: FastifyInstance): Promise<void> {
       exchangeCount?: number;
     };
 
-    if (!body.projectId || !body.message) {
-      return reply.status(400).send({ error: 'projectId and message are required' });
+    if (!body.projectId) {
+      return reply.status(400).send({ error: 'projectId is required' });
     }
+    // Allow empty/opener message — PIS handles it as first contact
 
     const project = await assertMember(body.projectId, userId, organisation_id);
     if (!project) return reply.status(403).send({ error: 'FORBIDDEN' });
@@ -53,7 +54,7 @@ export async function councilRoutes(fastify: FastifyInstance): Promise<void> {
     try {
       const result = await handleConciergeMessage({
         projectId: body.projectId,
-        message: body.message,
+        message: body.message ?? '',
         exchangeCount,
       });
       return reply.send(result);

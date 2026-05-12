@@ -231,11 +231,15 @@ export default function CouncilPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ projectId, message: '', history: [] }),
+        body: JSON.stringify({ projectId, message: '__OPEN__', history: [] }),
       });
       const data = await res.json();
-      setMessages([{ role: 'assistant', content: data.reply }]);
-      setPisHistory([{ role: 'assistant', content: data.reply }]);
+      if (data.reply) {
+        setMessages([{ role: 'assistant', content: data.reply }]);
+        setPisHistory([{ role: 'assistant', content: data.reply }]);
+      } else {
+        console.error('PIS opener failed:', data);
+      }
     } finally {
       setSending(false);
     }
