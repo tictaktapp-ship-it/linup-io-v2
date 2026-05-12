@@ -116,9 +116,9 @@ export default function CouncilPage() {
 
   // UI phase state
   const [uiPhase, setUiPhase] = useState<
-    'CONCIERGE' | 'PIS' | 'BRIEF_CONFIRM' | 'COUNCIL' | 'CONDITIONAL' |
+    'PIS' | 'BRIEF_CONFIRM' | 'COUNCIL' | 'CONDITIONAL' |
     'PHASE05' | 'CHARTER_CONFIRM' | 'COMPLETE'
-  >('CONCIERGE');
+  >('PIS');
 
   // Chat state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -159,8 +159,8 @@ export default function CouncilPage() {
           if (data.council_state) {
             resumeFromState(data.council_state as CouncilState);
           } else {
-            // Fresh project — send first concierge message
-            sendConciergeOpener();
+            // Fresh project — go straight to PIS
+            sendPisOpener();
           }
         }
       });
