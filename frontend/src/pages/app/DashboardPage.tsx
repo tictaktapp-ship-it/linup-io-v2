@@ -355,7 +355,7 @@ export function DashboardPage() {
 
   async function handleDelete(id: string) {
     try {
-      const res = await apiFetch('/api/projects/' + id, { method: 'DELETE', credentials: 'include' });
+      const res = await apiFetch('/api/projects/' + id, { method: 'DELETE', credentials: 'include', headers: {} });
       if (res.status === 409) {
         const body = await res.json().catch(() => ({}));
         if (body.code === 'ARTIFACTS_DOWNLOADED') {

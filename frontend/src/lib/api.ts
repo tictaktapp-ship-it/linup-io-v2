@@ -12,7 +12,8 @@ export function clearAuth() {
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    // Only set Content-Type if there is a body — DELETE/GET requests must not send it
+    ...(options.body !== undefined && options.body !== null ? { 'Content-Type': 'application/json' } : {}),
     ...(options.headers as Record<string, string> ?? {}),
   };
   if (token) headers['Authorization'] = 'Bearer ' + token;
