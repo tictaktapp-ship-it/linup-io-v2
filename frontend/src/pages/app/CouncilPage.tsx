@@ -59,6 +59,22 @@ const PHASE05_MEMBER_ORDER = [
 // ── Main Component ────────────────────────────────────────────────────────────
 
 // Generate structured answer options for a conditional question
+const COUNCIL_MEMBER_PROFILES: Record<string, { name: string; role: string; initials: string }> = {
+  'P0-2-001': { name: 'Marcus Webb',     role: 'Market Analyst',        initials: 'MW' },
+  'P0-2-002': { name: 'Priya Nair',      role: 'Customer Advocate',     initials: 'PN' },
+  'P0-2-003': { name: 'Daniel Osei',     role: 'Competitive Analyst',   initials: 'DO' },
+  'P0-2-004': { name: 'Sarah Lindqvist', role: 'Business Strategist',   initials: 'SL' },
+  'P0-2-005': { name: 'Tom Hargreaves',  role: 'Technical Assessor',    initials: 'TH' },
+  'P0-2-006': { name: 'Aisha Kamara',    role: 'Security Reviewer',     initials: 'AK' },
+  'P0-2-007': { name: 'Lena Fischer',    role: 'Ethics Officer',        initials: 'LF' },
+  'P0-2-008': { name: 'James Okafor',    role: 'Financial Analyst',     initials: 'JO' },
+  'P0-2-009': { name: 'Mei-Lin Chen',    role: 'Risk Analyst',          initials: 'MC' },
+  'P0-2-010': { name: 'Ravi Sharma',     role: 'Innovation Assessor',   initials: 'RS' },
+  'P0-2-011': { name: 'Claire Dubois',   role: 'Regulatory Specialist', initials: 'CD' },
+  'P0-2-012': { name: 'Ben Adeyemi',     role: 'Product Strategist',    initials: 'BA' },
+  'P0-2-013': { name: 'The Council',     role: 'Quality Gate',          initials: 'QG' },
+};
+
 function generateConditionalOptions(question: string): string[] {
   const q = question.toLowerCase();
   if (q.includes('evidence') || q.includes('data') || q.includes('validation') || q.includes('survey') || q.includes('research')) {
