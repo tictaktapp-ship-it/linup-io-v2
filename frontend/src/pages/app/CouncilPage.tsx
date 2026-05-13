@@ -347,8 +347,7 @@ export default function CouncilPage() {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (uiPhase === 'CONCIERGE') sendConciergeMessage();
-      else if (uiPhase === 'PIS') sendPisMessage();
+      if (uiPhase === 'PIS') sendPisMessage();
     }
   }
 
@@ -378,12 +377,10 @@ export default function CouncilPage() {
         )}
         <span className="council-topbar__project">{projectName}</span>
         <span className="council-topbar__phase">
-          {uiPhase === 'CONCIERGE' && 'Getting started'}
           {uiPhase === 'PIS' && 'Idea intake'}
           {uiPhase === 'BRIEF_CONFIRM' && 'Confirm your brief'}
           {uiPhase === 'COUNCIL' && 'Council reviewing'}
           {uiPhase === 'CONDITIONAL' && 'Your input needed'}
-          {uiPhase === 'BLOCKED' && 'Revision needed'}
           {uiPhase === 'PHASE05' && 'Feature discovery'}
           {uiPhase === 'CHARTER_CONFIRM' && 'Confirm feature charter'}
           {uiPhase === 'COMPLETE' && 'Starting Stage 1…'}
@@ -408,7 +405,7 @@ export default function CouncilPage() {
                   <div key={i} className={'council-msg council-msg--' + m.role}>
                     {m.role === 'assistant' && (
                       <span className="council-msg__label">
-                        {uiPhase === 'CONCIERGE' ? 'Concierge' : 'Product Intake Specialist'}
+                        {'Sarah Chen — Intake Specialist'}
                       </span>
                     )}
                     <p className="council-msg__text">{m.content}</p>
@@ -417,7 +414,7 @@ export default function CouncilPage() {
                 {sending && (
                   <div className="council-msg council-msg--assistant">
                     <span className="council-msg__label">
-                      {uiPhase === 'CONCIERGE' ? 'Concierge' : 'Product Intake Specialist'}
+                      {'Sarah Chen — Intake Specialist'}
                     </span>
                     <p className="council-msg__text council-msg__text--typing">Thinking…</p>
                   </div>
@@ -507,13 +504,12 @@ export default function CouncilPage() {
         )}
 
         {/* ── COUNCIL running grid ── */}
-        {(uiPhase === 'COUNCIL' || uiPhase === 'CONDITIONAL' || uiPhase === 'BLOCKED') && (
+        {(uiPhase === 'COUNCIL' || uiPhase === 'CONDITIONAL') && (
           <div className="council-review-layout">
             <div className="council-review-header">
               <h2 className="council-review-title">
                 {uiPhase === 'COUNCIL' && 'Council reviewing your idea…'}
                 {uiPhase === 'CONDITIONAL' && 'Council complete — your input needed'}
-                {uiPhase === 'BLOCKED' && 'Council complete — revision needed'}
               </h2>
               {uiPhase === 'COUNCIL' && (
                 <p className="council-review-sub">

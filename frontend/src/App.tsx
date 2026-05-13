@@ -11,6 +11,7 @@ import { NewProjectPage } from './pages/app/NewProjectPage';
 import WorkspacePage from './pages/app/WorkspacePage';
 import SecretsWizardPage from './pages/app/SecretsWizardPage';
 import CouncilPage from './pages/app/CouncilPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // ProtectedRoute: if no linup_session cookie present, redirect to /login
 // Full JWT + two_factor_verified enforcement happens server-side on every /api/* call
@@ -42,7 +43,7 @@ export default function App() {
             <Route path='/app/project/:id/secrets' element={<SecretsWizardPage />} />
           </Route>
           {/* Phase 9 — Council — inside ProtectedRoute, outside AppShell (own layout) */}
-          <Route path='/app/project/:id/council' element={<CouncilPage />} />
+          <Route path='/app/project/:id/council' element={<ErrorBoundary><CouncilPage /></ErrorBoundary>} />
         </Route>
         {/* Catch-all */}
         <Route path='*' element={<Navigate to='/' replace />} />
