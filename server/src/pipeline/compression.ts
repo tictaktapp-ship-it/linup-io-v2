@@ -89,16 +89,25 @@ export async function compressStage(
   consolidation: VpConsolidation,
   db: SupabaseClient
 ): Promise<void> {
+  // Stage 0: bypass compression — store minimal abstract
+  if (stage === 0) {
+    const minimal = { stage: 0, stageName: 'Phase 0 — Idea Validation', summary: 'Idea validated and ready for Council review.', keyDecisions: [], bindingConstraints: [], assumptions: [], openItems: [] };
+    await db.from('stage_abstracts').upsert({ project_id: projectId, stage, abstract_json: minimal, created_at: new Date().toISOString() });
+    console.log('[compression] Stage 0 bypass — stored minimal abstract');
+    return minimal as any;
+  }
+
   let rejectionReason: string | undefined;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     const messages = buildCompressionPrompt(consolidation, rejectionReason);
     const response = await callAIWithRetry('W', messages);
     const raw = (response.choices[0]?.message.content ?? '').trim();
+    const rawClean2 = raw.replace(/^[\s\S]*?(?=\{)/, '').replace(/\n?```$/i, '').trim();
 
     let abstract: StageAbstract;
     try {
-      abstract = JSON.parse(raw);
+      abstract = JSON.parse(rawClean2);
     } catch (e) {
       rejectionReason = 'Output was not valid JSON. Raw output: ' + raw.slice(0, 200);
       if (attempt === 2) throw new CompressionError(stage, rejectionReason);
