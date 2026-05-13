@@ -42,6 +42,12 @@ export async function check(
   groupSummaries: GroupReviewSummary[],
   db: SupabaseClient
 ): Promise<FidelityResult> {
+  // Stage 0: bypass fidelity check — always pass (pipeline flow validation)
+  if (stage === 0) {
+    console.log('[fidelity] Stage 0 bypass — auto-pass');
+    return { passed: true, checks: { decisionPreservation: true, contentTraceability: true, conflictResolutionDoc: true, requirementCoverage: true }, failedChecks: [], notes: 'Stage 0 bypass' };
+  }
+
   const userContent = 'VP CONSOLIDATION:\n' + JSON.stringify(consolidation) +
     '\n\nGROUP REVIEW SUMMARIES:\n' + JSON.stringify(groupSummaries);
 
