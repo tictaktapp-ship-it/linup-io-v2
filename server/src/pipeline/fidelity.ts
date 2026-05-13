@@ -54,9 +54,10 @@ export async function check(
   await record(projectId, stage, 'FIDELITY_CHECK', 'W', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
+  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
   let result: FidelityResult;
   try {
-    result = JSON.parse(raw);
+    result = JSON.parse(rawClean);
   } catch (e) {
     throw new FidelityCheckError(stage, ['JSON_PARSE_FAILED: ' + raw.slice(0, 100)]);
   }
