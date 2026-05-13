@@ -101,6 +101,17 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     await db.from('stage_runs').update({ status: 'SPEC_ACCEPTANCE_TESTING', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
     await acceptance.test(projectId, stage, consolidation, db);
 
+    // Stage 0: bypass both IG calls — go straight to AWAITING_FOUNDER
+    if (stage === 0) {
+      console.log('[ig] Stage 0 bypass — skipping IG calls, going to AWAITING_FOUNDER');
+      await db.from('stage_runs').update({ status: 'AWAITING_FOUNDER', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
+      const { compressStage } = await import('./compression.js');
+      await compressStage(projectId, stage, consolidation, db);
+      await pm.issueLocked(projectId, stage, db);
+      await notifications.sendStageCompleteNoQuestions(projectId, stage, db);
+      return;
+    }
+
     // 7. IG Call 1 - Mechanical
     await db.from('stage_runs').update({ status: 'IG_CALL_1', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
     const ig1Result = await ig.runCall1(projectId, stage, consolidation, db);
