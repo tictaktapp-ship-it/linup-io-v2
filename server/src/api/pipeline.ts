@@ -32,7 +32,7 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
       .eq('stage', stage)
       .single();
 
-    const runnableStatuses = ['PENDING', 'ERROR', 'HOLD'];
+    const runnableStatuses = ['PENDING', 'ERROR', 'HOLD', 'LOCKED'];
     if (stageRun && !runnableStatuses.includes(stageRun.status)) {
       return reply.status(409).send({ error: 'Stage is already ' + stageRun.status });
     }
