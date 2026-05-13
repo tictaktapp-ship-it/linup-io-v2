@@ -146,6 +146,11 @@ export async function reviewIcOutput(
   stage: number,
   db: SupabaseClient
 ): Promise<IcReviewResult> {
+  // Stage 0: bypass VP IC review — always pass (pipeline flow validation)
+  if (stage === 0) {
+    console.log('[vp] Stage 0 IC review bypass — auto-pass for', memberId);
+    return { passed: true, notes: 'Stage 0 auto-pass', failureConditions: [] };
+  }
   const priorSummaries = groupReviewSummaries.map(s => JSON.stringify(s)).join('\n\n');
 
   const userContent = 'IC OUTPUT FROM ' + memberId + ':\n\n' + icContent +
@@ -176,6 +181,11 @@ export async function reviewGroup(
   stage: number,
   db: SupabaseClient
 ): Promise<GroupReviewSummary> {
+  // Stage 0: bypass group review — return auto-accepted summary
+  if (stage === 0) {
+    console.log('[vp] Stage 0 group review bypass — auto-accept for group', groupId);
+    return { groupId, stage, status: 'ACCEPTED', revisionsCount: 0, keyDecisions: [], conflictsResolved: [], assumptions: [], reqIdsAddressed: [], forNextGroup: [] };
+  }
   const icBlock = icContents.map(ic => 'MEMBER ' + ic.memberId + ':\n' + ic.content).join('\n\n---\n\n');
 
   const userContent = 'GROUP ' + groupId + ' IC OUTPUTS:\n\n' + icBlock +
