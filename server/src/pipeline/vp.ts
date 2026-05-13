@@ -223,6 +223,14 @@ export async function consolidate(
   groupSummaries: GroupReviewSummary[],
   db: SupabaseClient
 ): Promise<import('./compression.js').VpConsolidation> {
+  // Stage 0: bypass VP consolidation — return hardcoded consolidation
+  if (stage === 0) {
+    const consolidation = { stage: 0, stageName: 'Phase 0 — Foundation', bindingConstraints: [], keyDecisions: ['Idea validated and ready for Council review'], allAssumptions: ['Project has sufficient information to proceed'], founderDecisions: [] };
+    await db.from('stage_consolidations').insert({ project_id: projectId, stage, consolidation_json: consolidation, created_at: new Date().toISOString() });
+    console.log('[vp] Stage 0 consolidation bypass — stored hardcoded');
+    return consolidation as any;
+  }
+
   const summaryBlock = groupSummaries.map(s => JSON.stringify(s)).join('\n\n');
 
   const userContent = 'GROUP REVIEW SUMMARIES:\n\n' + summaryBlock +
