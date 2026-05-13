@@ -18,15 +18,15 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
     // Verify project exists and user is a member of the org
     const { data: project, error: projErr } = await supabase
       .from('projects')
-      .select('id, org_id')
+      .select('id, organisation_id')
       .eq('id', projectId)
       .single();
     if (projErr || !project) return reply.status(404).send({ error: 'Project not found' });
 
     const { data: membership } = await supabase
-      .from('org_members')
+      .from('organisation_members')
       .select('id')
-      .eq('org_id', project.org_id)
+      .eq('organisation_id', project.organisation_id)
       .eq('user_id', user.id)
       .single();
     if (!membership) return reply.status(403).send({ error: 'Not a member of this organisation' });

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { apiFetch } from '../../lib/api';
 import type { Project, StageRun } from '../../pages/app/WorkspacePage';
 
 // ── Stub IC group data (replaced by real data in Phase 6) ───────────────
@@ -232,6 +233,26 @@ interface Props {
 export function StageRunner({ project, activeStageRun }: Props) {
   const [centreView, setCentreView] = useState<CentreView>('IDLE');
   const [questionIndex, setQuestionIndex] = useState(0);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
+
+  async function handleStart() {
+    setStarting(true);
+    setStartError(null);
+    try {
+      const res = await apiFetch('/api/pipeline/run/' + project.id + '/' + project.current_stage, {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        setStartError(body.error ?? 'Failed to start pipeline');
+      }
+    } catch {
+      setStartError('Could not reach the server. Please try again.');
+    } finally {
+      setStarting(false);
+    }
+  }
 
   // Derive view from activeStageRun status (Realtime updates drive this)
   const status = activeStageRun?.status ?? 'IDLE';
@@ -328,7 +349,33 @@ export function StageRunner({ project, activeStageRun }: Props) {
 
       {view === 'IDLE' && (
         <div className='stage-runner__idle'>
-          <p>Pipeline is ready. Start your project to begin Stage {project.current_stage}.</p>
+          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>
+            Stage {project.current_stage} — Ready to begin
+          </h3>
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
+            Your idea has been validated by the Council. Click below to start Stage {project.current_stage} — your AI engineering team will begin work immediately.
+          </p>
+          {startError && (
+            <p style={{ fontSize: '13px', color: 'var(--color-error)', marginBottom: '12px' }}>{startError}</p>
+          )}
+          <button
+            onClick={handleStart}
+            disabled={starting}
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '15px',
+              fontWeight: 600,
+              background: starting ? '#C084E8' : '#8C00B4',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 28px',
+              cursor: starting ? 'not-allowed' : 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            {starting ? 'Starting…' : 'Start Stage ' + project.current_stage + ' →'}
+          </button>
         </div>
       )}
     </div>
