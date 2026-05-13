@@ -37,9 +37,12 @@ async function runIc(memberId: string, projectId: string, stage: number, groupSu
     await record(projectId, stage, memberId, member.tier, response, db);
     void checkSoftLimits(projectId, db); // non-blocking soft limit check (Doc 11 D11)
     const content = (response.choices[0]?.message.content ?? '');
+    console.log('[runIc] member:', memberId, 'iter:', iteration, 'response content length:', content.length, 'choices:', response.choices?.length);
     const validation = await schema.validate(memberId, content);
     if (!validation.passed) {
-      await db.from('ic_artifacts').insert({ project_id: projectId, stage, member_id: memberId, group_id: member.groupId, content, iteration_number: iteration, status: 'SCHEMA_FAIL', schema_errors: validation.errors, created_at: new Date().toISOString() });
+      const { error: sfErr } = await db.from('ic_artifacts').insert({ project_id: projectId, stage, member_id: memberId, group_id: member.groupId, content, iteration_number: iteration, status: 'SCHEMA_FAIL', schema_errors: validation.errors, created_at: new Date().toISOString() });
+      if (sfErr) console.error('[runIc] SCHEMA_FAIL insert error:', sfErr.message);
+      console.log('[runIc] iter', iteration, 'content length:', content.length, 'errors:', validation.errors);
       iteration++; continue;
     }
     const vpId = getVpIdForStage(stage);
