@@ -133,9 +133,10 @@ export async function test(
   await record(projectId, stage, 'ACCEPTANCE_TESTER', 'W', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
+  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
   let result: AcceptanceResult;
   try {
-    result = JSON.parse(raw);
+    result = JSON.parse(rawClean);
   } catch (e) {
     throw new Error('[acceptance] JSON parse failed: ' + raw.slice(0, 100));
   }
