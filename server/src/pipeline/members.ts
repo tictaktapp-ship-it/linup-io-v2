@@ -25,7 +25,7 @@ export interface MemberWithPrompts extends Member {
 export async function loadMember(memberId: string, db: SupabaseClient): Promise<MemberWithPrompts> {
   const { data, error } = await db
     .from('member_prompts')
-    .select('member_id, title, stage, tier, group_id, is_conditional, condition_domain, prompt_system_encrypted, prompt_template_encrypted')
+    .select('member_id, member_title, stage, model_tier, group_id, is_conditional, condition_domain, prompt_system_encrypted, prompt_template_encrypted')
     .eq('member_id', memberId)
     .single();
 
@@ -36,9 +36,9 @@ export async function loadMember(memberId: string, db: SupabaseClient): Promise<
 
   return {
     id: data.member_id,
-    title: data.title,
+    title: data.member_title,
     stage: data.stage,
-    tier: data.tier as MemberTier,
+    tier: data.model_tier as MemberTier,
     groupId: data.group_id,
     isConditional: data.is_conditional === true,
     conditionDomain: data.condition_domain ?? undefined,
