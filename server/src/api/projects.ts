@@ -210,6 +210,19 @@ export async function projectRoutes(fastify: FastifyInstance): Promise<void> {
       return reply.status(500).send({ error: 'STAGE_RUNS_FETCH_FAILED' });
     }
 
-    return reply.send({ project, stageRuns: stageRuns ?? [] });
+
+    // Compute progress_pct and status from stage_runs
+    const runs = stageRuns ?? [];
+    const TOTAL_STAGES = 13;
+    const completedStatuses = ['AWAITING_FOUNDER', 'LOCKED', 'COMPLETE'];
+    const activeStatuses = ['PENDING', 'PROCEEDING', 'IC_RUNNING', 'IG_CALL_1', 'IG_CALL_2', 'FIDELITY_CHECK', 'SPEC_ACCEPTANCE_TESTING', 'COS_REVIEWING', 'PLT_TRANSLATING', 'DA_REVIEWING', 'HOLD'];
+    const completedCount = runs.filter(r => completedStatuses.includes(r.status)).length;
+    const progress_pct = Math.round((completedCount / TOTAL_STAGES) * 100);
+    const currentRun = runs.find(r => activeStatuses.includes(r.status));
+    const awaitingRun = runs.find(r => r.status === 'AWAITING_FOUNDER');
+    const projectStatus = awaitingRun ? 'AWAITING_FOUNDER' : (currentRun ? 'RUNNING' : project.status);
+    const enrichedProject = { ...project, progress_pct, status: projectStatus };
+
+    return reply.send({ project: enrichedProject, stageRuns: runs });
   });
 }
