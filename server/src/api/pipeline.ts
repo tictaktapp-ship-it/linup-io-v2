@@ -42,7 +42,6 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
       project_id: projectId,
       stage,
       status: 'PENDING',
-      queued_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'project_id,stage' });
     if (upsertErr) return reply.status(500).send({ error: 'Failed to queue stage: ' + upsertErr.message });
