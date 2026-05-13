@@ -55,7 +55,6 @@ const PHASE05_MEMBER_ORDER = [
   'P05-1-001','P05-1-002','P05-2-001','P05-2-002','P05-2-003',
 ];
 
-const API = (path: string) => (import.meta.env.VITE_API_URL as string) + '/api' + path;
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
@@ -204,7 +203,7 @@ export default function CouncilPage() {
     if (phase === 'PIS') { setUiPhase('PIS'); return; }
     if (phase === 'COUNCIL_RUNNING') { setUiPhase('COUNCIL'); return; }
     if (phase === 'AWAITING_FOUNDER_CONDITIONAL') { setUiPhase('CONDITIONAL'); return; }
-    if (phase === 'BLOCKED') { setUiPhase('BLOCKED'); return; }
+    if (phase === 'BLOCKED') { setUiPhase('CONDITIONAL'); return; }
     if (phase === 'PHASE05_RUNNING' || phase === 'PHASE05_STARTING') { setUiPhase('PHASE05'); return; }
     if (phase === 'AWAITING_CHARTER_CONFIRMATION') { setUiPhase('CHARTER_CONFIRM'); return; }
     if (phase === 'COMPLETE') { setUiPhase('COMPLETE'); return; }
@@ -392,9 +391,7 @@ export default function CouncilPage() {
       </div>
 
       <div className="council-body">
-        <div style={{ fontSize: '11px', color: '#8A8A82', padding: '4px 8px', background: '#F9FAFB', borderBottom: '1px solid #E0E0DE', fontFamily: 'monospace' }}>
-          phase: {uiPhase} | loaded: {pageLoaded ? 'yes' : 'no'} | councilPhase: {councilState?.phase ?? 'none'} | msgs: {messages.length}
-        </div>
+
         {!pageLoaded && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, color: 'var(--color-text-tertiary)', fontSize: '14px', padding: '40px' }}>
             Loading…
