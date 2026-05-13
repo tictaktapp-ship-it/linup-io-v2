@@ -52,9 +52,9 @@ export async function loadMember(memberId: string, db: SupabaseClient): Promise<
 // Optionally filters by domain for conditional members.
 export async function loadMembersForStage(stage: number, projectDomain: string | null, db: SupabaseClient): Promise<MemberWithPrompts[]> {
   let query = db.from('member_prompts')
-    .select('member_id, title, stage, tier, group_id, is_conditional, condition_domain, prompt_system_encrypted, prompt_template_encrypted')
+    .select('member_id, member_title, stage, model_tier, group_id, is_conditional, condition_domain, prompt_system_encrypted, prompt_template_encrypted')
     .eq('stage', stage)
-    .eq('tier', 'W'); // ICs only â€” VPs are Tier M and loaded separately
+    .eq('model_tier', 'W'); // ICs only â€” VPs are Tier M and loaded separately
 
   const { data, error } = await query;
   if (error) throw new Error('Failed to load members for stage ' + stage + ': ' + error.message);
@@ -67,9 +67,9 @@ export async function loadMembersForStage(stage: number, projectDomain: string |
 
   return members.map((m: any) => ({
     id: m.member_id,
-    title: m.title,
+    title: m.member_title,
     stage: m.stage,
-    tier: m.tier as MemberTier,
+    tier: m.model_tier as MemberTier,
     groupId: m.group_id,
     isConditional: m.is_conditional === true,
     conditionDomain: m.condition_domain ?? undefined,
