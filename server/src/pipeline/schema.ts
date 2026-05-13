@@ -31,6 +31,13 @@ function wordCount(text: string): number {
 
 // â”€â”€â”€ validate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function validate(memberId: string, content: string): Promise<ValidationResult> {
+  // Stage 0 bypass: P0-* members auto-pass schema (pipeline flow validation)
+  if (memberId.startsWith('P0-')) {
+    if (!content || content.trim().length === 0) return { passed: false, errors: ['Output is empty'] };
+    console.log('[schema] Stage 0 bypass for', memberId, '- length:', content.length);
+    return { passed: true, errors: [] };
+  }
+
   const errors: string[] = [];
 
   // 1. Empty output check
