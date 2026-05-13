@@ -84,6 +84,24 @@ export async function analyse(
   stage: number,
   db: SupabaseClient
 ): Promise<VpAnalysisReport> {
+  // Stage 0: return hardcoded execution sequence (deterministic, no AI call needed)
+  if (stage === 0) {
+    const report: VpAnalysisReport = {
+      stage: 0, vpId,
+      featureInventory: ['Idea validation', 'Product intake', 'Council review'],
+      icRoster: ['P0-0-001','P0-1-001','P0-2-001','P0-2-002','P0-2-003','P0-2-004','P0-2-005','P0-2-006','P0-2-007','P0-2-008','P0-2-009','P0-2-010','P0-2-011','P0-2-012','P0-2-013'],
+      dependencyGraph: {}, conditionalSelections: [], conflictPredictions: [],
+      executionSequence: [
+        { id: 'P0-0', members: ['P0-0-001'] },
+        { id: 'P0-1', members: ['P0-1-001'] },
+        { id: 'P0-2', members: ['P0-2-001','P0-2-002','P0-2-003','P0-2-004','P0-2-005','P0-2-006','P0-2-007','P0-2-008','P0-2-009','P0-2-010','P0-2-011','P0-2-012','P0-2-013'] },
+      ],
+    };
+    await db.from('vp_analysis_reports').insert({ project_id: projectId, stage, vp_id: vpId, report_json: report, created_at: new Date().toISOString() });
+    console.log('[vp] Stage 0 hardcoded sequence — groups: ' + report.executionSequence.length);
+    return report;
+  }
+
   const { data: project } = await db.from('projects').select('identity_json').eq('id', projectId).single();
   const { data: abstracts } = await db.from('stage_abstracts').select('abstract_json').eq('project_id', projectId).lt('stage', stage).order('stage');
 
