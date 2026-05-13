@@ -19,11 +19,24 @@ function resolveKey(hexKey: string, context: 'secrets' | 'prompts'): Buffer {
   return key;
 }
 
-function toBuffer(data: Buffer | string): Buffer {
+function toBuffer(data: Buffer | string | object): Buffer {
   if (Buffer.isBuffer(data)) return data;
   if (typeof data === 'string') {
-    if (data.startsWith('\\x')) return Buffer.from(data.slice(2), 'hex');
-    return Buffer.from(data, 'base64');
+    // Supabase returns BYTEA as hex string prefixed with \x
+    const hex = data.startsWith('\\x') ? data.slice(2) : data;
+    const buf = Buffer.from(hex, 'hex');
+    // Check if the decoded data is a JSON-serialized Buffer: {"type":"Buffer","data":[...]}
+    try {
+      const parsed = JSON.parse(buf.toString('utf8'));
+      if (parsed && parsed.type === 'Buffer' && Array.isArray(parsed.data)) {
+        return Buffer.from(parsed.data);
+      }
+    } catch { /* not JSON — use raw bytes */ }
+    return buf;
+  }
+  // Handle object form {type:'Buffer',data:[...]}
+  if (typeof data === 'object' && (data as any).type === 'Buffer') {
+    return Buffer.from((data as any).data);
   }
   throw new Error('[crypto] Unexpected data type: ' + typeof data);
 }
