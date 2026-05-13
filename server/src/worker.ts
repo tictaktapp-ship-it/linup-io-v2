@@ -68,3 +68,8 @@ async function poll(): Promise<void> {
 
 console.log('[worker] Starting - poll interval: ' + POLL_INTERVAL_MS + 'ms');
 poll();
+
+export function startWorker(): void {
+  setInterval(claimAndRun, POLL_INTERVAL_MS);
+  claimAndRun();
+}

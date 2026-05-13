@@ -23,6 +23,7 @@ import { notificationRoutes } from './routes/notifications.js';
 import { councilRoutes } from './api/council.js';
 import { oauthRoutes } from './api/oauth.js';
 import { founderRoutes } from './api/founder.js';
+import { startWorker } from './worker.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -109,4 +110,7 @@ const start = async () => {
   }
 };
 
-start();
+start().then(() => {
+  startWorker();
+  fastify.log.info('Pipeline worker started');
+});
