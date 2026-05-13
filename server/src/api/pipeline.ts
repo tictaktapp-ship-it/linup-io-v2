@@ -10,7 +10,7 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
 
   // ─── POST /api/pipeline/run/:projectId/:stage ─────────────────────────────
   fastify.post('/api/pipeline/run/:projectId/:stage', { preHandler: requireAuth }, async (request, reply) => {
-    const user = (request as any).user;
+    const { id: userId, organisation_id: userOrgId } = request.profile;
     const { projectId, stage: stageStr } = request.params as { projectId: string; stage: string };
     const stage = parseInt(stageStr, 10);
     if (isNaN(stage) || stage < 0 || stage > 12) return reply.status(400).send({ error: 'Invalid stage' });
@@ -23,13 +23,6 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
       .single();
     if (projErr || !project) return reply.status(404).send({ error: 'Project not found' });
 
-    const { data: membership } = await supabase
-      .from('organisation_members')
-      .select('id')
-      .eq('organisation_id', project.organisation_id)
-      .eq('user_id', user.id)
-      .single();
-    if (!membership) return reply.status(403).send({ error: 'Not a member of this organisation' });
 
     // Check stage_run exists and is in a runnable state
     const { data: stageRun } = await supabase
@@ -48,7 +41,7 @@ export async function pipelineRoutes(fastify: FastifyInstance): Promise<void> {
     const { error: upsertErr } = await supabase.from('stage_runs').upsert({
       project_id: projectId,
       stage,
-      status: 'QUEUED',
+      status: 'PENDING',
       queued_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'project_id,stage' });
