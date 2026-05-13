@@ -69,6 +69,9 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     await db.from('stage_runs').update({ status: 'IC_RUNNING', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
 
     // 3. Execute IC groups sequentially (Doc 7A - never brief all ICs simultaneously)
+    if (!vpAnalysis.executionSequence || vpAnalysis.executionSequence.length === 0) {
+      throw new Error('VP analysis returned empty executionSequence for stage ' + stage);
+    }
     const allGroupSummaries: GroupReviewSummary[] = [];
     for (const group of vpAnalysis.executionSequence) {
       await db.from('stage_runs').update({ current_group: group.id, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
