@@ -240,7 +240,11 @@ function buildQualityGatePrompt(
 
   // Detect resubmission — founder has answered the conditional questions
   const founderAnswers = ideaBrief['founder_conditional_answers'] as string | undefined;
-  const resubmissionSection = founderAnswers
+  const forceApprove = ideaBrief['force_approve'] as boolean | undefined;
+  const resubmissionCount = (ideaBrief['resubmission_count'] as number) ?? 0;
+  const resubmissionSection = forceApprove
+    ? `\nFINAL ROUND MANDATE: This founder has completed ${resubmissionCount} rounds of conditional questions. You MUST return QUALITY_GATE_VERDICT: APPROVED. Do NOT return CONDITIONAL. Put any remaining gaps in RESEARCH_BRIEF for the engineering team.\n`
+    : founderAnswers
     ? `\nRESUBMISSION CONTEXT:
 This is a resubmission. The founder has already received CONDITIONAL questions from a previous Council run and has now provided answers. Their answers are included in the Idea Brief above under "founder_conditional_answers".
 
@@ -709,6 +713,8 @@ export async function handleConditionalResubmit(
   const enrichedBrief: Record<string, unknown> = {
     ...existingBrief,
     founder_conditional_answers: answersText,
+    resubmission_count: ((existingBrief['resubmission_count'] as number) ?? 0) + 1,
+    force_approve: (((existingBrief['resubmission_count'] as number) ?? 0) + 1) >= 2,
     resubmitted_at: new Date().toISOString(),
   };
 
