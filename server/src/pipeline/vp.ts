@@ -100,7 +100,8 @@ export async function analyse(
   await record(projectId, stage, vpId, 'M', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  const report: VpAnalysisReport = JSON.parse(raw);
+  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+  const report: VpAnalysisReport = JSON.parse(rawClean);
 
   // Persist VP Analysis Report
   await db.from('vp_analysis_reports').insert({
@@ -142,7 +143,8 @@ export async function reviewIcOutput(
   await record(projectId, stage, vpId, 'M', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  return JSON.parse(raw) as IcReviewResult;
+  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+  return JSON.parse(rawClean) as IcReviewResult;
 }
 
 // â”€â”€â”€ reviewGroup (Doc 9C â€” Group Review Summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -169,7 +171,7 @@ export async function reviewGroup(
   const response = await callAIWithRetry('M', messages);
   await record(projectId, stage, vpId, 'M', response, db);
 
-  const summary: GroupReviewSummary = JSON.parse((response.choices[0]?.message.content ?? '').trim());
+  const summary: GroupReviewSummary = JSON.parse((response.choices[0]?.message.content ?? '').trim().replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/i,'').trim());
 
   await db.from('group_review_summaries').insert({
     project_id: projectId,
@@ -207,7 +209,7 @@ export async function consolidate(
   const response = await callAIWithRetry('M', messages);
   await record(projectId, stage, vpId, 'M', response, db);
 
-  const consolidation = JSON.parse((response.choices[0]?.message.content ?? '').trim());
+  const consolidation = JSON.parse((response.choices[0]?.message.content ?? '').trim().replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/i,'').trim());
 
   await db.from('stage_consolidations').insert({
     project_id: projectId,
