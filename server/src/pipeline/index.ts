@@ -119,6 +119,9 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     // 8. IG Call 2 - Reasoning
     await db.from('stage_runs').update({ status: 'IG_CALL_2', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
     const ig2Result = await ig.runCall2(projectId, stage, consolidation, ig1Result, db);
+    // Write questions to stage_runs so frontend can display them
+    const questions = ig2Result.questionsForFounder ?? [];
+    await db.from('stage_runs').update({ questions_json: questions, has_questions: questions.length > 0, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
 
     // CHECKPOINT 2
     await db.from('stage_runs').update({ checkpoint_2_status: 'SHOWN', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
