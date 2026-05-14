@@ -108,18 +108,15 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     if (ig1Result.hold) {
       await resilience.handleHold(projectId, stage, ig1Result, db);
       await notifications.sendHoldNotification(projectId, stage, ig1Result, db);
-      console.log('[ig] Hold on call 1 — skipping call 2, continuing to CoS/PLT');
-      const cosOutputH = await cos.run(projectId, stage, consolidation, ig1Result.auditTrail ?? '', db);
-      const pltOutputH = await plt.run(projectId, stage, cosOutputH, ig1Result.questionsForFounder ?? [], db);
-      await db.from('stage_runs').update({ status: 'AWAITING_FOUNDER', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
-      if (pltOutputH.hasQuestions) { await notifications.sendQuestionsReady(projectId, pltOutputH, db); }
-      else { const { compressStage } = await import('./compression.js'); await compressStage(projectId, stage, consolidation, db); await pm.issueLocked(projectId, stage, db); await notifications.sendStageCompleteNoQuestions(projectId, stage, db); }
+      console.log('[ig] Hold on call 1 — going to AWAITING_FOUNDER with no questions');
+      await db.from('stage_runs').update({ status: 'AWAITING_FOUNDER', questions_json: [], has_questions: false, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
       return;
     }
 
     // 8. IG Call 2 - Reasoning
     await db.from('stage_runs').update({ status: 'IG_CALL_2', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
     const ig2Result = await ig.runCall2(projectId, stage, consolidation, ig1Result, db);
+
     // CHECKPOINT 2
     await db.from('stage_runs').update({ checkpoint_2_status: 'SHOWN', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
 
