@@ -35,6 +35,7 @@ export default function WorkspacePage() {
   const [stageRuns, setStageRuns] = useState<StageRun[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStage, setSelectedStage] = useState<number>(0);
 
   // ── Initial data fetch ────────────────────────────────────────────────
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function WorkspacePage() {
   }
 
   const activeStageRun = stageRuns.find((sr) => sr.stage === project.current_stage) ?? null;
-  const displayStage = selectedStage;
+  const displayStage = selectedStage > 0 ? selectedStage : project.current_stage;
   const displayStageRun = stageRuns.find((sr) => sr.stage === displayStage) ?? null;
 
   return (
