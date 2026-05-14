@@ -12,7 +12,13 @@ const MAX_CONCURRENT = 1;
 
 const db = createClient(
   process.env['SUPABASE_URL'] as string,
-  process.env['SUPABASE_SERVICE_ROLE_KEY'] as string
+  process.env['SUPABASE_SERVICE_ROLE_KEY'] as string,
+  {
+    global: {
+      fetch: (url: string | URL | Request, options?: RequestInit) =>
+        fetch(url, { ...options, signal: AbortSignal.timeout(600_000) }),
+    },
+  }
 );
 
 let running = 0;
