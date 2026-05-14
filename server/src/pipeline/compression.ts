@@ -73,7 +73,7 @@ function validateAbstractCompleteness(
 
   // Every binding constraint from consolidation must appear verbatim in abstract
   for (const constraint of consolidation.bindingConstraints) {
-    const found = abstract.bindingConstraints.some(c => c.trim() === constraint.trim());
+    const found = abstract.bindingConstraints.some((c: any) => String(c).trim() === String(constraint).trim());
     if (!found) missing.push(constraint);
   }
 
