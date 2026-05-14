@@ -306,7 +306,7 @@ export function StageRunner({ project, activeStageRun, displayStage }: Props) {
   const derivedView: CentreView =
     runningStatuses.includes(status) ? 'RUNNING'
     : status === 'AWAITING_FOUNDER' ? 'QUESTIONS'
-    : status === 'LOCKED'           ? 'QUESTIONS'
+    : status === 'LOCKED'           ? 'LOCKED'
     : status === 'DEADLOCKED'       ? 'DEADLOCKED'
     : 'IDLE';
 
@@ -356,6 +356,13 @@ export function StageRunner({ project, activeStageRun, displayStage }: Props) {
         <div className='checkpoint-banner checkpoint-banner--2'>
           <p className='checkpoint-banner__title'>✅ Stage review complete</p>
           <p>No questions required for this stage. Your team is proceeding.</p>
+        </div>
+      )}
+
+      {view === 'LOCKED' && (
+        <div className='checkpoint-banner checkpoint-banner--2'>
+          <p className='checkpoint-banner__title'>✅ Stage complete</p>
+          <p>This stage has been reviewed and locked. Your team has proceeded to the next stage.</p>
         </div>
       )}
 
