@@ -5,6 +5,7 @@ import { runStage } from './pipeline/index.js';
 // Polls stage_runs for status PENDING, claims them, calls runStage.
 // Two-step claim: SELECT oldest PENDING row, then UPDATE by id.
 // (Supabase JS client does not support .limit() on UPDATE operations)
+// Single entry point: startWorker() — no module-level auto-execution.
 
 const POLL_INTERVAL_MS = 5000;
 const MAX_CONCURRENT = 1;
@@ -37,7 +38,7 @@ async function claimAndRun(): Promise<void> {
     .eq('id', candidate.id)
     .eq('status', 'PENDING');
 
-  if (claimError) return;
+  if (claimError) return; // another worker claimed it first
 
   running++;
   const { project_id: projectId, stage } = candidate;
@@ -66,10 +67,7 @@ async function poll(): Promise<void> {
   setTimeout(poll, POLL_INTERVAL_MS);
 }
 
-console.log('[worker] Starting - poll interval: ' + POLL_INTERVAL_MS + 'ms');
-poll();
-
 export function startWorker(): void {
-  setInterval(claimAndRun, POLL_INTERVAL_MS);
-  claimAndRun();
+  console.log('[worker] Starting - poll interval: ' + POLL_INTERVAL_MS + 'ms');
+  poll();
 }
