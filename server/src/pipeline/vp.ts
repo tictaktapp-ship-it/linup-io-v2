@@ -228,10 +228,11 @@ export async function consolidate(
   const raw = (response.choices[0]?.message.content ?? '').trim();
   const consolidation = extractJson(raw);
 
-  await db.from('stage_consolidations').insert({
-    project_id: projectId, stage, consolidation_json: consolidation, created_at: new Date().toISOString(),
-  });
-
-  console.log('[vp] Consolidation stored — stage ' + stage);
+  try {
+    await db.from('stage_consolidations').insert({
+      project_id: projectId, stage, consolidation_json: consolidation, created_at: new Date().toISOString(),
+    });
+    console.log('[vp] Consolidation stored — stage ' + stage);
+  } catch (e: any) { console.warn('[vp] Consolidation store failed (non-fatal):', e.message); }
   return consolidation as any;
 }
