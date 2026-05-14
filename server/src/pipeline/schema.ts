@@ -32,7 +32,7 @@ function wordCount(text: string): number {
 // â”€â”€â”€ validate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export async function validate(memberId: string, content: string): Promise<ValidationResult> {
   // Stage 0 bypass: P0-* members auto-pass schema (pipeline flow validation)
-  if (memberId.startsWith('P0-')) {
+  if (memberId.startsWith('P0-') || memberId.startsWith('P05-') || memberId.startsWith('L-')) {
     if (!content || content.trim().length === 0) return { passed: false, errors: ['Output is empty'] };
     console.log('[schema] Stage 0 bypass for', memberId, '- length:', content.length);
     return { passed: true, errors: [] };

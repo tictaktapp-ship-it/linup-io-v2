@@ -146,7 +146,7 @@ export async function analyse(
     // Fallback: build execution sequence from DB members for this stage
     console.warn('[vp] executionSequence empty — building fallback from member_prompts for stage ' + stage);
     const { data: stageMembers } = await db.from('member_prompts').select('member_id').eq('stage', stage).eq('model_tier', 'W');
-    const memberIds = (stageMembers ?? []).map((m: any) => m.member_id as string);
+    const memberIds = (stageMembers ?? []).map((m: any) => m.member_id as string).filter((id: string) => !id.startsWith('P05-') && !id.startsWith('L-'));
     if (memberIds.length === 0) throw new Error('VP analysis returned empty executionSequence and no IC members found in DB for stage ' + stage);
     report.executionSequence = [{ id: stage + 'A', members: memberIds }];
   }
