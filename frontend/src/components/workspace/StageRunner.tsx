@@ -256,10 +256,12 @@ export function StageRunner({ project, activeStageRun }: Props) {
 
   // Derive view from activeStageRun status (Realtime updates drive this)
   const status = activeStageRun?.status ?? 'IDLE';
+  const runningStatuses = ['RUNNING', 'PENDING', 'PROCEEDING', 'IC_RUNNING', 'IG_CALL_1', 'IG_CALL_2', 'FIDELITY_CHECK', 'SPEC_ACCEPTANCE_TESTING', 'COS_REVIEWING', 'PLT_TRANSLATING', 'DA_REVIEWING'];
   const derivedView: CentreView =
-    status === 'RUNNING'          ? 'RUNNING'
+    runningStatuses.includes(status) ? 'RUNNING'
     : status === 'AWAITING_FOUNDER' ? 'QUESTIONS'
-    : status === 'DEADLOCKED'      ? 'DEADLOCKED'
+    : status === 'LOCKED'           ? 'QUESTIONS'
+    : status === 'DEADLOCKED'       ? 'DEADLOCKED'
     : 'IDLE';
 
   const view = centreView !== 'IDLE' ? centreView : derivedView;
