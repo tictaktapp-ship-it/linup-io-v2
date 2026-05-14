@@ -90,6 +90,8 @@ export default function WorkspacePage() {
   }
 
   const activeStageRun = stageRuns.find((sr) => sr.stage === project.current_stage) ?? null;
+  const displayStage = selectedStage ?? project?.current_stage ?? 0;
+  const displayStageRun = stageRuns.find((sr) => sr.stage === displayStage) ?? null;
 
   return (
     <div className='workspace'>
@@ -97,7 +99,7 @@ export default function WorkspacePage() {
       <aside className='workspace__left'>
         <PipelineSidebar
           stageRuns={stageRuns}
-          currentStage={project.current_stage}
+          currentStage={project.current_stage} selectedStage={displayStage} onStageSelect={setSelectedStage}
           progressPct={project.progress_pct}
         />
       </aside>
@@ -106,7 +108,7 @@ export default function WorkspacePage() {
       <main className='workspace__centre'>
         <StageRunner
           project={project}
-          activeStageRun={activeStageRun}
+          activeStageRun={displayStageRun}
           stageRuns={stageRuns}
         />
       </main>

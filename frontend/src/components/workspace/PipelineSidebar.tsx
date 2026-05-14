@@ -5,23 +5,27 @@ const STAGE_NAMES = ["P0  Idea Validation","P0.5  Feature Discovery","S1  Produc
 interface Props {
   stageRuns: StageRun[];
   currentStage: number;
+  selectedStage: number;
   progressPct: number;
+  onStageSelect: (stage: number) => void;
 }
 
 function statusDot(status: string): { symbol: string; className: string } {
   switch (status) {
-    case 'LOCKED':    return { symbol: '✓', className: 'dot--locked' };
-    case 'RUNNING':   return { symbol: '▶', className: 'dot--running' };
+    case 'LOCKED':           return { symbol: '✓', className: 'dot--locked' };
+    case 'RUNNING':          return { symbol: '▶', className: 'dot--running' };
     case 'AWAITING_FOUNDER': return { symbol: '●', className: 'dot--awaiting' };
-    case 'DEADLOCKED':return { symbol: '✖', className: 'dot--error' };
-    case 'ERROR':     return { symbol: '✖', className: 'dot--error' };
-    case 'PENDING':   return { symbol: '□', className: 'dot--waiting' };
-    case 'WAITING':   return { symbol: '□', className: 'dot--waiting' };
-    default:          return { symbol: '□', className: 'dot--waiting' };
+    case 'DEADLOCKED':       return { symbol: '✖', className: 'dot--error' };
+    case 'ERROR':            return { symbol: '✖', className: 'dot--error' };
+    case 'PENDING':          return { symbol: '□', className: 'dot--waiting' };
+    case 'WAITING':          return { symbol: '□', className: 'dot--waiting' };
+    default:                 return { symbol: '□', className: 'dot--waiting' };
   }
 }
 
-export function PipelineSidebar({ stageRuns, currentStage, progressPct }: Props) {
+const CLICKABLE_STATUSES = ['LOCKED', 'AWAITING_FOUNDER'];
+
+export function PipelineSidebar({ stageRuns, currentStage, selectedStage, progressPct, onStageSelect }: Props) {
   const pct = Math.min(100, Math.max(0, progressPct));
 
   return (
@@ -41,10 +45,19 @@ export function PipelineSidebar({ stageRuns, currentStage, progressPct }: Props)
           const status = run?.status ?? 'WAITING';
           const dot = statusDot(status);
           const isActive = i === currentStage;
+          const isSelected = i === selectedStage;
+          const isClickable = CLICKABLE_STATUSES.includes(status) || i === currentStage;
           return (
             <li
               key={i}
-              className={'pipeline-sidebar__item' + (isActive ? ' pipeline-sidebar__item--active' : '')}
+              className={
+                'pipeline-sidebar__item' +
+                (isActive ? ' pipeline-sidebar__item--active' : '') +
+                (isSelected ? ' pipeline-sidebar__item--selected' : '') +
+                (isClickable ? ' pipeline-sidebar__item--clickable' : '')
+              }
+              onClick={isClickable ? () => onStageSelect(i) : undefined}
+              style={isClickable ? { cursor: 'pointer' } : {}}
             >
               <span className={'pipeline-sidebar__dot ' + dot.className}>{dot.symbol}</span>
               <span className='pipeline-sidebar__name'>{name}</span>
