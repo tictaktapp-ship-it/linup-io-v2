@@ -96,21 +96,9 @@ export async function downloadsRoutes(app: FastifyInstance) {
     const { project_id } = req.params as { project_id: string };
     const userId = (req as any).userId;
     try {
-      const access = await getDownloadAccess(userId, project_id, 'SPEC_PDF');
-      if (!access.allowed) {
-        // Create PaymentIntent for Ã‚Â£10 per-artifact
-        const pi = await stripe.paymentIntents.create({
-          amount: 1000,
-          currency: 'gbp',
-          metadata: { projectId: project_id, userId, artifactType: 'SPEC_PDF', type: 'PER_ARTIFACT' },
-        });
-        return reply.send({
-          available: false,
-          payment_required: true,
-          amount_gbp: access.amountGbp,
-          payment_intent_client_secret: pi.client_secret,
-        });
-      }
+      // Verify project membership — spec PDF is free for all members
+      const { data: member } = await supabase.from('project_members').select('id').eq('project_id', project_id).eq('user_id', userId).single();
+      if (!member) return reply.status(403).send({ error: { code: 'FORBIDDEN' } });
       // Generate PDF on-demand if not yet in storage
       const storagePath = project_id + '/spec.pdf';
       const { data: existing } = await supabase.storage.from('artifacts').list(project_id);
