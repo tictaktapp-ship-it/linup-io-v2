@@ -78,8 +78,20 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     const allGroupSummaries: GroupReviewSummary[] = [];
     for (const group of vpAnalysis.executionSequence) {
       await db.from('stage_runs').update({ current_group: group.id, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
-      if (!group.members || group.members.length === 0) { console.warn('[vp] Skipping group ' + group.id + ' — no members'); continue; }
-      const icResults = await Promise.all(group.members.map((mid: string) => runIc(mid, projectId, stage, allGroupSummaries, db)));
+      if (!group.members || group.members.length === 0) { console.warn('[vp] Skipping group ' + group.id + ' â€” no members'); continue; }
+      const icResults = (await Promise.all(
+        group.members.map(async (mid: string) => {
+          try {
+            return await runIc(mid, projectId, stage, allGroupSummaries, db);
+          } catch (err: any) {
+            if (err instanceof StuckMemberError) {
+              console.warn('[runIc] STUCK (non-fatal) — ' + mid + ' stage ' + stage + ': ' + err.message);
+              return null;
+            }
+            throw err;
+          }
+        })
+      )).filter((r): r is { memberId: string; content: string } => r !== null);
       const groupSummary = await vp.reviewGroup(vpId, vpMember.systemPrompt, group.id, icResults, projectId, stage, db);
       await rtm.updateForGroup(projectId, groupSummary, db);
       allGroupSummaries.push(groupSummary);
@@ -109,10 +121,10 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     if (ig1Result.hold) {
       await resilience.handleHold(projectId, stage, ig1Result, db);
       await notifications.sendHoldNotification(projectId, stage, ig1Result, db);
-      console.log('[ig] Hold on call 1 — going to AWAITING_FOUNDER with no questions');
+      console.log('[ig] Hold on call 1 â€” going to AWAITING_FOUNDER with no questions');
       await db.from('stage_runs').update({ status: 'AWAITING_FOUNDER', questions_json: [], has_questions: false, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
-      // No questions — auto-compress and lock immediately
-      // No questions — attempt compression but always issue LOCKED regardless
+      // No questions â€” auto-compress and lock immediately
+      // No questions â€” attempt compression but always issue LOCKED regardless
       try { const { compressStage } = await import('./compression.js'); await compressStage(projectId, stage, consolidation, db); console.log('[compression] Stage ' + stage + ' compressed.'); } catch (e: any) { console.warn('[compression] Failed (non-fatal):', e.message); }
       await pm.issueLocked(projectId, stage, db);
       return;
