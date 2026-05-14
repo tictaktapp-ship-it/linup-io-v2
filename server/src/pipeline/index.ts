@@ -114,6 +114,7 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
       // No questions — attempt compression but always issue LOCKED regardless
       try { const { compressStage } = await import('./compression.js'); await compressStage(projectId, stage, consolidation, db); console.log('[compression] Stage ' + stage + ' compressed.'); } catch (e: any) { console.warn('[compression] Failed (non-fatal):', e.message); }
       await pm.issueLocked(projectId, stage, db);
+      return;
     }
 
     // 8. IG Call 2 - Reasoning
