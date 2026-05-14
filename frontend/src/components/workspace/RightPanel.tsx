@@ -1,4 +1,5 @@
 import React from 'react';
+import { apiFetch } from '../../lib/api';
 import type { Project, StageRun } from '../../pages/app/WorkspacePage';
 
 interface Props {
@@ -18,7 +19,7 @@ function DownloadPanel({ projectId, downloadState }: { projectId: string; downlo
   async function handleDownloadPdf() {
     setPdfLoading(true);
     try {
-      const res = await fetch('/api/downloads/spec/' + projectId, { credentials: 'include' });
+      const res = await apiFetch('/api/downloads/spec/' + projectId);
       const data = await res.json();
       if (data.download_url) {
         window.open(data.download_url, '_blank');
