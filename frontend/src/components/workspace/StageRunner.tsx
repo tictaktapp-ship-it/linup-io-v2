@@ -229,10 +229,11 @@ type CentreView = 'RUNNING' | 'CHECKPOINT_1' | 'QUESTIONS' | 'ASSUMED' | 'DEADLO
 interface Props {
   project: Project;
   activeStageRun: StageRun | null;
+  displayStage?: number;
   stageRuns: StageRun[];
 }
 
-export function StageRunner({ project, activeStageRun }: Props) {
+export function StageRunner({ project, activeStageRun, displayStage }: Props) {
   const [centreView, setCentreView] = useState<CentreView>('IDLE');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [starting, setStarting] = useState(false);
@@ -317,7 +318,7 @@ export function StageRunner({ project, activeStageRun }: Props) {
     { id: 'a3', title: 'UTC timezone for all timestamps', explanation: 'Standard engineering practice.' },
   ];
 
-  const stageName = 'Stage ' + project.current_stage;
+  const stageName = 'Stage ' + (displayStage ?? project.current_stage);
   const groups = getStubGroups(project.current_stage);
 
   return (
