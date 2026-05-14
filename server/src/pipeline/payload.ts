@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { getModel, getMaxTokens } from './cost.js';
 
 // â”€â”€â”€ Errors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -67,7 +67,7 @@ export async function callAIWithRetry(
   const MAX_SERVER_ERROR_RETRIES = 2;
   let rateLimitAttempts = 0;
   let serverErrorAttempts = 0;
-  const timeoutMs = tier === 'S' ? 120_000 : 60_000;
+  const timeoutMs = tier === 'S' ? 300_000 : 180_000;
   const model = getModel(tier);
   const maxTokens = getMaxTokens(tier, maxTokensOverride);
 
