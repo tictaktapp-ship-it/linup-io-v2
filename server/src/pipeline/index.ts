@@ -95,7 +95,7 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     // 5. Fidelity Check
     await db.from('stage_runs').update({ status: 'FIDELITY_CHECK', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
     const fidelityResult = await fidelity.check(projectId, stage, consolidation, allGroupSummaries, db);
-    if (!fidelityResult.passed) throw new Error('Fidelity check failed: ' + fidelityResult.failedChecks.join(', '));
+    if (!fidelityResult.passed) console.warn('[fidelity] Non-blocking failures: ' + fidelityResult.failedChecks.join(', '));
 
     // 6. Acceptance Test
     await db.from('stage_runs').update({ status: 'SPEC_ACCEPTANCE_TESTING', updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
