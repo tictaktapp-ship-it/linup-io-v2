@@ -3,10 +3,10 @@ import { callAIWithRetry } from './payload.js';
 import type { Message } from './payload.js';
 import { record } from './cost.js';
 
-// â”€â”€â”€ Types (Doc 9C) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Types (Doc 9C) ---
 export interface IcGroup {
-  id: string;          // e.g. '1G', '2A'
-  members: string[];   // member IDs in this group
+  id: string;
+  members: string[];
 }
 
 export interface VpAnalysisReport {
@@ -14,7 +14,7 @@ export interface VpAnalysisReport {
   vpId: string;
   featureInventory: string[];
   icRoster: string[];
-  dependencyGraph: Record<string, string[]>; // memberId -> depends on []
+  dependencyGraph: Record<string, string[]>;
   conditionalSelections: string[];
   conflictPredictions: string[];
   executionSequence: IcGroup[];
@@ -35,10 +35,10 @@ export interface GroupReviewSummary {
 export interface IcReviewResult {
   passed: boolean;
   notes: string;
-  failureConditions: string[]; // which of the 8 VP failure conditions triggered
+  failureConditions: string[];
 }
 
-// â”€â”€â”€ 8 VP failure conditions (Doc 9C Section 7) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- 8 VP failure conditions (Doc 9C Section 7) ---
 const VP_FAILURE_CONDITIONS = [
   'MISSING_SECTION',
   'PLACEHOLDER_CONTENT',
@@ -50,16 +50,14 @@ const VP_FAILURE_CONDITIONS = [
   'CONFLICT_WITH_PRIOR_GROUP',
 ] as const;
 
-// â”€â”€â”€ VP Registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Maps stage number to VP member ID (Tier M)
-// VPs are EM-layer members â€” seeded in member_prompts with their stage
+// --- VP Registry ---
 const VP_BY_STAGE: Record<number, string> = {
-  0:  'L-0-001', // CPO â€” Phase 0
-  1:  'L-1-001', // VP Stage 1
-  2:  'L-1-002', // VP Stage 2
-  3:  'L-1-003', // VP Stage 3
-  4:  'L-1-004', // VP Stage 4
-  5:  'L-1-001', // VP Stage 5 (re-used per member register)
+  0:  'L-0-001',
+  1:  'L-1-001',
+  2:  'L-1-002',
+  3:  'L-1-003',
+  4:  'L-1-004',
+  5:  'L-1-001',
   6:  'L-1-002',
   7:  'L-1-003',
   8:  'L-1-004',
@@ -75,8 +73,32 @@ export function getVpIdForStage(stage: number): string {
   return vpId;
 }
 
-// â”€â”€â”€ VP Analysis (Phase 1+2+3 combined â€” Doc 9C) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Produces VpAnalysisReport with executionSequence for the stage runner.
+// --- Robust JSON extractor ---
+// Handles AI responses that prepend prose before the JSON block.
+function extractJson(raw: string): Record<string, unknown> {
+  // Strip markdown fences first
+  const clean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+  // Try direct parse
+  try { return JSON.parse(clean) as Record<string, unknown>; } catch { /* fall through */ }
+  // Try last { ... } block in the full response
+  const matches = clean.match(/\{[\s\S]*\}/g);
+  if (matches && matches.length > 0) {
+    const candidate = matches[matches.length - 1]!;
+    try { return JSON.parse(candidate) as Record<string, unknown>; } catch { /* fall through */ }
+  }
+  // Fallback: try each line starting with '{' from the end
+  const lines = clean.split('\n').reverse();
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('{')) {
+      try { return JSON.parse(trimmed) as Record<string, unknown>; } catch { continue; }
+    }
+  }
+  console.warn('[vp] Could not extract JSON — raw response:', raw.substring(0, 200));
+  return {};
+}
+
+// --- VP Analysis (Phase 1+2+3 combined - Doc 9C) ---
 export async function analyse(
   vpId: string,
   vpSystemPrompt: string,
@@ -107,7 +129,7 @@ export async function analyse(
 
   const userContent = 'PROJECT: ' + JSON.stringify(project?.identity_json ?? {}) +
     '\n\nPRIOR STAGE ABSTRACTS: ' + JSON.stringify((abstracts ?? []).map((a: any) => a.abstract_json)) +
-    '\n\nRun VP Analysis Phase 1 (feature inventory, IC roster, dependency mapping, conditional selection, conflict prediction) and Phase 2 (execution sequence). Output as JSON matching VpAnalysisReport schema.';
+    '\n\nRun VP Analysis Phase 1 (feature inventory, IC roster, dependency mapping, conditional selection, conflict prediction) and Phase 2 (execution sequence). Output as JSON matching VpAnalysisReport schema. Respond with JSON only — no prose, no markdown fences.';
 
   const messages: Message[] = [
     { role: 'system', content: vpSystemPrompt },
@@ -118,24 +140,21 @@ export async function analyse(
   await record(projectId, stage, vpId, 'M', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-  const report: VpAnalysisReport = JSON.parse(rawClean);
+  const report = extractJson(raw) as unknown as VpAnalysisReport;
 
-  // Persist VP Analysis Report
+  if (!report.executionSequence || report.executionSequence.length === 0) {
+    throw new Error('VP analysis returned empty executionSequence for stage ' + stage);
+  }
+
   await db.from('vp_analysis_reports').insert({
-    project_id: projectId,
-    stage,
-    vp_id: vpId,
-    report_json: report,
-    created_at: new Date().toISOString(),
+    project_id: projectId, stage, vp_id: vpId, report_json: report, created_at: new Date().toISOString(),
   });
 
-  console.log('[vp] Analysis complete â€” stage ' + stage + ' groups: ' + report.executionSequence.length);
+  console.log('[vp] Analysis complete — stage ' + stage + ' groups: ' + report.executionSequence.length);
   return report;
 }
 
-// â”€â”€â”€ reviewIcOutput (Doc 9C â€” 8 VP failure conditions) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// VP reviews a single IC output. Binary pass/fail. No VP discretion.
+// --- reviewIcOutput (Doc 9C - 8 VP failure conditions) ---
 export async function reviewIcOutput(
   vpId: string,
   vpSystemPrompt: string,
@@ -146,7 +165,7 @@ export async function reviewIcOutput(
   stage: number,
   db: SupabaseClient
 ): Promise<IcReviewResult> {
-  // Stage 0: bypass VP IC review — always pass (pipeline flow validation)
+  // Stage 0: bypass VP IC review — council pipeline handles Stage 0
   if (stage === 0) {
     console.log('[vp] Stage 0 IC review bypass — auto-pass for', memberId);
     return { passed: true, notes: 'Stage 0 auto-pass', failureConditions: [] };
@@ -155,7 +174,7 @@ export async function reviewIcOutput(
 
   const userContent = 'IC OUTPUT FROM ' + memberId + ':\n\n' + icContent +
     '\n\nPRIOR GROUP REVIEW SUMMARIES:\n' + (priorSummaries || 'None yet.') +
-    '\n\nApply all 8 VP failure conditions. Output JSON: { passed: boolean, notes: string, failureConditions: string[] }';
+    '\n\nApply all 8 VP failure conditions. Output JSON only — no prose, no markdown: { passed: boolean, notes: string, failureConditions: string[] }';
 
   const messages: Message[] = [
     { role: 'system', content: vpSystemPrompt },
@@ -166,12 +185,10 @@ export async function reviewIcOutput(
   await record(projectId, stage, vpId, 'M', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  const rawClean = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-  return JSON.parse(rawClean) as IcReviewResult;
+  return extractJson(raw) as unknown as IcReviewResult;
 }
 
-// â”€â”€â”€ reviewGroup (Doc 9C â€” Group Review Summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Produces Group Review Summary after all ICs in a group complete.
+// --- reviewGroup (Doc 9C - Group Review Summary) ---
 export async function reviewGroup(
   vpId: string,
   vpSystemPrompt: string,
@@ -181,7 +198,7 @@ export async function reviewGroup(
   stage: number,
   db: SupabaseClient
 ): Promise<GroupReviewSummary> {
-  // Stage 0: bypass group review — return auto-accepted summary
+  // Stage 0: bypass group review — council pipeline handles Stage 0
   if (stage === 0) {
     console.log('[vp] Stage 0 group review bypass — auto-accept for group', groupId);
     return { groupId, stage, status: 'ACCEPTED', revisionsCount: 0, keyDecisions: [], conflictsResolved: [], assumptions: [], reqIdsAddressed: [], forNextGroup: [] };
@@ -189,7 +206,7 @@ export async function reviewGroup(
   const icBlock = icContents.map(ic => 'MEMBER ' + ic.memberId + ':\n' + ic.content).join('\n\n---\n\n');
 
   const userContent = 'GROUP ' + groupId + ' IC OUTPUTS:\n\n' + icBlock +
-    '\n\nProduce Group Review Summary. Output JSON matching GroupReviewSummary schema exactly.';
+    '\n\nProduce Group Review Summary. Output JSON only — no prose, no markdown — matching GroupReviewSummary schema exactly.';
 
   const messages: Message[] = [
     { role: 'system', content: vpSystemPrompt },
@@ -199,22 +216,17 @@ export async function reviewGroup(
   const response = await callAIWithRetry('M', messages);
   await record(projectId, stage, vpId, 'M', response, db);
 
-  const summary: GroupReviewSummary = JSON.parse((response.choices[0]?.message.content ?? '').trim().replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/i,'').trim());
+  const raw = (response.choices[0]?.message.content ?? '').trim();
+  const summary = extractJson(raw) as unknown as GroupReviewSummary;
 
   await db.from('group_review_summaries').insert({
-    project_id: projectId,
-    stage,
-    group_id: groupId,
-    summary_json: summary,
-    created_at: new Date().toISOString(),
+    project_id: projectId, stage, group_id: groupId, summary_json: summary, created_at: new Date().toISOString(),
   });
 
   return summary;
 }
 
-// â”€â”€â”€ consolidate (Doc 7A + 9C) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// VP consolidates all group outputs into stage consolidation.
-// Max 2 attempts before PM is notified (Doc 9C Fidelity Check).
+// --- consolidate (Doc 7A + 9C) ---
 export async function consolidate(
   vpId: string,
   vpSystemPrompt: string,
@@ -223,7 +235,7 @@ export async function consolidate(
   groupSummaries: GroupReviewSummary[],
   db: SupabaseClient
 ): Promise<import('./compression.js').VpConsolidation> {
-  // Stage 0: bypass VP consolidation — return hardcoded consolidation
+  // Stage 0: bypass VP consolidation — council pipeline handles Stage 0
   if (stage === 0) {
     const consolidation = { stage: 0, stageName: 'Phase 0 — Foundation', bindingConstraints: [], keyDecisions: ['Idea validated and ready for Council review'], allAssumptions: ['Project has sufficient information to proceed'], founderDecisions: [] };
     await db.from('stage_consolidations').insert({ project_id: projectId, stage, consolidation_json: consolidation, created_at: new Date().toISOString() });
@@ -234,7 +246,7 @@ export async function consolidate(
   const summaryBlock = groupSummaries.map(s => JSON.stringify(s)).join('\n\n');
 
   const userContent = 'GROUP REVIEW SUMMARIES:\n\n' + summaryBlock +
-    '\n\nProduce VP Consolidation. Output JSON matching VpConsolidation schema: ' +
+    '\n\nProduce VP Consolidation. Output JSON only — no prose, no markdown — matching VpConsolidation schema: ' +
     '{ stage, stageName, bindingConstraints: string[], keyDecisions: string[], allAssumptions: string[], founderDecisions: string[] }';
 
   const messages: Message[] = [
@@ -245,15 +257,13 @@ export async function consolidate(
   const response = await callAIWithRetry('M', messages);
   await record(projectId, stage, vpId, 'M', response, db);
 
-  const consolidation = JSON.parse((response.choices[0]?.message.content ?? '').trim().replace(/^```(?:json)?\n?/i,'').replace(/\n?```$/i,'').trim());
+  const raw = (response.choices[0]?.message.content ?? '').trim();
+  const consolidation = extractJson(raw);
 
   await db.from('stage_consolidations').insert({
-    project_id: projectId,
-    stage,
-    consolidation_json: consolidation,
-    created_at: new Date().toISOString(),
+    project_id: projectId, stage, consolidation_json: consolidation, created_at: new Date().toISOString(),
   });
 
-  console.log('[vp] Consolidation stored â€” stage ' + stage);
-  return consolidation;
+  console.log('[vp] Consolidation stored — stage ' + stage);
+  return consolidation as any;
 }

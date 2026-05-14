@@ -1,0 +1,1 @@
+ALTER TABLE linup_spend_log ADD COLUMN IF NOT EXISTS total_tokens integer;
