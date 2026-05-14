@@ -40,6 +40,31 @@ const IG_CALL2_SYSTEM_PROMPT = 'You are the Inspector General. Call 2 - Reasonin
   'Output IG Structured Audit Trail per 9C Section 8. ' +
   'Final line must be JSON only: { hold: boolean, holdReason: string or null, auditTrail: string, questionsForFounder: array }';
 
+// Extracts the last JSON object from an AI response.
+// Handles cases where the model prepends prose before the JSON block.
+function extractJson(raw: string): Record<string, unknown> {
+  // Try to find the last { ... } block in the response
+  const match = raw.match(/\{[\s\S]*\}/g);
+  if (match && match.length > 0) {
+    const candidate = match[match.length - 1]!;
+    try {
+      return JSON.parse(candidate) as Record<string, unknown>;
+    } catch {
+      // fall through to line-by-line
+    }
+  }
+  // Fallback: try each line that starts with '{' from the end
+  const lines = raw.split('\n').reverse();
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('{')) {
+      try { return JSON.parse(trimmed) as Record<string, unknown>; } catch { continue; }
+    }
+  }
+  console.warn('[ig] Could not extract JSON from response — defaulting to no-hold');
+  return {};
+}
+
 export async function runCall1(projectId: string, stage: number, consolidation: VpConsolidation, db: SupabaseClient): Promise<IgResult> {
   const { data: stageRun } = await db.from('stage_runs').select('status, pm_proceed_at').eq('project_id', projectId).eq('stage', stage).single();
   const userContent = 'STAGE: ' + stage + '\nPM_PROCEED_AT: ' + (stageRun?.pm_proceed_at ?? 'NOT SET') + '\n\nVP CONSOLIDATION:\n' + JSON.stringify(consolidation);
@@ -47,9 +72,8 @@ export async function runCall1(projectId: string, stage: number, consolidation: 
   const response = await callAIWithRetry('M', messages);
   await record(projectId, stage, 'IG-CALL-1', 'M', response, db);
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  const jsonLine = raw.split('\n').filter((l: string) => l.trim().startsWith('{')).pop() ?? '{}';
-  const parsed = JSON.parse(jsonLine);
-  const result: IgResult = { call: 1, hold: parsed.hold === true, holdReason: parsed.holdReason ?? undefined, auditTrail: raw };
+  const parsed = extractJson(raw);
+  const result: IgResult = { call: 1, hold: parsed['hold'] === true, holdReason: parsed['holdReason'] as string ?? undefined, auditTrail: raw };
   await db.from('ig_audit_trails').insert({ project_id: projectId, stage, call_number: 1, hold: result.hold, hold_reason: result.holdReason ?? null, audit_trail: result.auditTrail, created_at: new Date().toISOString() });
   console.log('[ig] Call 1 stage ' + stage + ' hold: ' + result.hold);
   return result;
@@ -67,9 +91,8 @@ export async function runCall2(projectId: string, stage: number, consolidation: 
   const response = await callAIWithRetry('S', messages);
   await record(projectId, stage, 'IG-CALL-2', 'S', response, db);
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  const jsonLine = raw.split('\n').filter((l: string) => l.trim().startsWith('{')).pop() ?? '{}';
-  const parsed = JSON.parse(jsonLine);
-  const result: IgResult = { call: 2, hold: parsed.hold === true, holdReason: parsed.holdReason ?? undefined, auditTrail: raw, questionsForFounder: parsed.questionsForFounder ?? [] };
+  const parsed = extractJson(raw);
+  const result: IgResult = { call: 2, hold: parsed['hold'] === true, holdReason: parsed['holdReason'] as string ?? undefined, auditTrail: raw, questionsForFounder: parsed['questionsForFounder'] as IgQuestion[] ?? [] };
   await db.from('ig_audit_trails').insert({ project_id: projectId, stage, call_number: 2, hold: result.hold, hold_reason: result.holdReason ?? null, audit_trail: result.auditTrail, questions_json: result.questionsForFounder ?? null, created_at: new Date().toISOString() });
   console.log('[ig] Call 2 stage ' + stage + ' hold: ' + result.hold + ' questions: ' + (result.questionsForFounder?.length ?? 0));
   return result;
