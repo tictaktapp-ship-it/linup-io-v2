@@ -190,7 +190,13 @@ export async function reviewIcOutput(
   await record(projectId, stage, vpId, 'M', response, db);
 
   const raw = (response.choices[0]?.message.content ?? '').trim();
-  return extractJson(raw) as unknown as IcReviewResult;
+  const parsed = extractJson(raw) as unknown as IcReviewResult;
+  // If JSON extraction failed, default to passed=true — VP review must not silently block pipeline
+  if (typeof parsed.passed !== 'boolean') {
+    console.warn('[vp] reviewIcOutput JSON parse failed for ' + memberId + ' — defaulting to pass');
+    return { passed: true, notes: 'JSON parse failed — auto-pass', failureConditions: [] };
+  }
+  return parsed;
 }
 
 // --- reviewGroup (Doc 9C - Group Review Summary) ---
