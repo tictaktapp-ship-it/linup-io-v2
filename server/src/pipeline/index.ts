@@ -78,9 +78,9 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
     const allGroupSummaries: GroupReviewSummary[] = [];
     for (const group of vpAnalysis.executionSequence) {
       await db.from('stage_runs').update({ current_group: group.id, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
+      if (!group.members || group.members.length === 0) { console.warn('[vp] Skipping group ' + group.id + ' — no members'); continue; }
       const icResults = await Promise.all(group.members.map((mid: string) => runIc(mid, projectId, stage, allGroupSummaries, db)));
       const groupSummary = await vp.reviewGroup(vpId, vpMember.systemPrompt, group.id, icResults, projectId, stage, db);
-      if (!group.members || group.members.length === 0) { console.warn('[vp] Skipping group ' + group.id + ' — no members'); continue; }
       await rtm.updateForGroup(projectId, groupSummary, db);
       allGroupSummaries.push(groupSummary);
     }
