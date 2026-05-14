@@ -90,7 +90,7 @@ export default function WorkspacePage() {
   }
 
   const activeStageRun = stageRuns.find((sr) => sr.stage === project.current_stage) ?? null;
-  const displayStage = selectedStage ?? project?.current_stage ?? 0;
+  const displayStage = selectedStage;
   const displayStageRun = stageRuns.find((sr) => sr.stage === displayStage) ?? null;
 
   return (
