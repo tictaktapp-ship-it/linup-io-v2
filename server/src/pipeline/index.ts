@@ -110,6 +110,9 @@ export async function runStage(projectId: string, stage: number, db: SupabaseCli
       await notifications.sendHoldNotification(projectId, stage, ig1Result, db);
       console.log('[ig] Hold on call 1 — going to AWAITING_FOUNDER with no questions');
       await db.from('stage_runs').update({ status: 'AWAITING_FOUNDER', questions_json: [], has_questions: false, updated_at: new Date().toISOString() }).eq('project_id', projectId).eq('stage', stage);
+      // No questions — auto-compress and lock immediately
+      try { const { compressStage } = await import('./compression.js'); await compressStage(projectId, stage, consolidation, db); } catch (e: any) { console.warn('[compression] Failed:', e.message); }
+      await pm.issueLocked(projectId, stage, db);
       return;
     }
 
