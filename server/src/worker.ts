@@ -67,7 +67,18 @@ async function poll(): Promise<void> {
   setTimeout(poll, POLL_INTERVAL_MS);
 }
 
-export function startWorker(): void {
+export async function startWorker(): Promise<void> {
   console.log('[worker] Starting - poll interval: ' + POLL_INTERVAL_MS + 'ms');
+
+  // On startup: reset any IC_RUNNING/PROCEEDING stages to PENDING
+  // This handles Render hibernation restarts where stages were killed mid-run
+  const STUCK_STATUSES = ['IC_RUNNING', 'PROCEEDING', 'IG_CALL_1', 'IG_CALL_2', 'FIDELITY_CHECK', 'SPEC_ACCEPTANCE_TESTING', 'COS_REVIEWING', 'PLT_TRANSLATING', 'DA_REVIEWING'];
+  for (const stuck of STUCK_STATUSES) {
+    await db.from('stage_runs')
+      .update({ status: 'PENDING', updated_at: new Date().toISOString() })
+      .eq('status', stuck);
+  }
+  console.log('[worker] Startup recovery complete — stuck stages reset to PENDING');
+
   poll();
 }
