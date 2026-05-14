@@ -14,6 +14,7 @@ export interface StageRun {
   completed_at: string | null;
   hold_count: number;
   created_at: string;
+  questions_json: { id: string; text: string; rationale: string; options: { key: string; text: string; recommended?: boolean }[] }[] | null;
 }
 
 export interface Project {

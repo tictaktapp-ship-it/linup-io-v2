@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { apiFetch } from '../../lib/api';
 import type { Project, StageRun } from '../../pages/app/WorkspacePage';
 
-// ── Stub IC group data (replaced by real data in Phase 6) ───────────────
+// ── Stub IC group data ──────────────────────────────────────────────────────
 interface IcMember { id: string; name: string; status: 'DONE' | 'RUNNING' | 'WAITING'; }
 interface IcGroup { id: string; label: string; members: IcMember[]; vpReview: boolean; }
 
 function getStubGroups(stage: number): IcGroup[] {
   return [{
     id: 'group-a',
-    label: 'Stage ' + stage + 'A — Core Specialists',
+    label: 'Stage ' + stage + 'A – Core Specialists',
     members: [
       { id: '001', name: 'LEAD SPECIALIST', status: 'DONE' },
       { id: '002', name: 'DOMAIN EXPERT', status: 'RUNNING' },
@@ -19,7 +19,7 @@ function getStubGroups(stage: number): IcGroup[] {
   }];
 }
 
-// ── IcMemberChip ─────────────────────────────────────────────────────────
+// ── IcMemberChip ────────────────────────────────────────────────────────────
 function IcMemberChip({ member }: { member: IcMember }) {
   const label = member.status === 'DONE' ? '✓ Done'
     : member.status === 'RUNNING' ? '● Running...'
@@ -32,7 +32,7 @@ function IcMemberChip({ member }: { member: IcMember }) {
   );
 }
 
-// ── IcGroupCard ──────────────────────────────────────────────────────────
+// ── IcGroupCard ─────────────────────────────────────────────────────────────
 function IcGroupCard({ group }: { group: IcGroup }) {
   const done = group.members.filter((m) => m.status === 'DONE').length;
   const total = group.members.length;
@@ -56,7 +56,7 @@ function IcGroupCard({ group }: { group: IcGroup }) {
   );
 }
 
-// ── CheckpointBanner1 ────────────────────────────────────────────────────
+// ── CheckpointBanner1 ───────────────────────────────────────────────────────
 function CheckpointBanner1() {
   return (
     <div className='checkpoint-banner checkpoint-banner--1'>
@@ -68,7 +68,7 @@ function CheckpointBanner1() {
   );
 }
 
-// ── CheckpointBanner2 ────────────────────────────────────────────────────
+// ── CheckpointBanner2 ───────────────────────────────────────────────────────
 function CheckpointBanner2({ onReview }: { onReview: () => void }) {
   return (
     <div className='checkpoint-banner checkpoint-banner--2'>
@@ -79,7 +79,7 @@ function CheckpointBanner2({ onReview }: { onReview: () => void }) {
   );
 }
 
-// ── OptionDExpander ──────────────────────────────────────────────────────
+// ── OptionDExpander ─────────────────────────────────────────────────────────
 function OptionDExpander({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className='option-d'>
@@ -96,7 +96,7 @@ function OptionDExpander({ value, onChange }: { value: string; onChange: (v: str
   );
 }
 
-// ── FounderQuestion ──────────────────────────────────────────────────────
+// ── FounderQuestion ─────────────────────────────────────────────────────────
 interface Question {
   id: string;
   text: string;
@@ -105,12 +105,14 @@ interface Question {
 }
 
 function FounderQuestion({
-  question, index, total, onAnswer
+  question, index, total, onAnswer, submitting, submitError,
 }: {
   question: Question;
   index: number;
   total: number;
   onAnswer: (questionId: string, key: string, freeText?: string) => void;
+  submitting: boolean;
+  submitError: string | null;
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [freeText, setFreeText] = useState('');
@@ -150,21 +152,21 @@ function FounderQuestion({
         ))}
       </div>
       {selected === 'D' && <OptionDExpander value={freeText} onChange={setFreeText} />}
+      {submitError && <p style={{ color: 'var(--color-error)', fontSize: '13px', margin: '8px 0 0' }}>{submitError}</p>}
       <div className='founder-question__actions'>
-        <button className='btn btn--ghost'>Skip for now</button>
         <button
           className='btn btn--primary'
-          disabled={!selected || (selected === 'D' && freeText.trim().length === 0)}
+          disabled={!selected || (selected === 'D' && freeText.trim().length === 0) || submitting}
           onClick={handleConfirm}
         >
-          Confirm answer →
+          {submitting ? 'Saving…' : 'Confirm answer →'}
         </button>
       </div>
     </div>
   );
 }
 
-// ── AssumedDecisions ─────────────────────────────────────────────────────
+// ── AssumedDecisions ────────────────────────────────────────────────────────
 interface AssumedDecision { id: string; title: string; explanation: string; }
 
 function AssumedDecisions({
@@ -192,7 +194,7 @@ function AssumedDecisions({
   );
 }
 
-// ── DeadlockBanner ───────────────────────────────────────────────────────
+// ── DeadlockBanner ──────────────────────────────────────────────────────────
 function DeadlockBanner({
   stageName, issue, options, onResolve
 }: {
@@ -221,7 +223,7 @@ function DeadlockBanner({
   );
 }
 
-// ── StageRunner (main export) ─────────────────────────────────────────────
+// ── StageRunner (main export) ───────────────────────────────────────────────
 type CentreView = 'RUNNING' | 'CHECKPOINT_1' | 'QUESTIONS' | 'ASSUMED' | 'DEADLOCKED' | 'IDLE';
 
 interface Props {
@@ -235,6 +237,8 @@ export function StageRunner({ project, activeStageRun }: Props) {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleStart() {
     setStarting(true);
@@ -254,6 +258,47 @@ export function StageRunner({ project, activeStageRun }: Props) {
     }
   }
 
+  // Real questions from activeStageRun.questions_json, fallback to empty
+  const questions: Question[] = (activeStageRun?.questions_json as Question[] | null) ?? [];
+
+  // Called when founder confirms an answer — POSTs to /api/founder/answer
+  async function handleAnswer(questionId: string, key: string, freeText?: string) {
+    setSubmitting(true);
+    setSubmitError(null);
+    const answerText = key === 'D' ? (freeText ?? '') : key;
+    try {
+      const res = await apiFetch('/api/founder/answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          stage: activeStageRun?.stage ?? project.current_stage,
+          questionId,
+          answer: answerText,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        // 409 ALREADY_ANSWERED is fine — advance anyway
+        if (res.status !== 409) {
+          setSubmitError(body.error ?? 'Failed to save answer. Please try again.');
+          return;
+        }
+      }
+      // Advance to next question or show assumed decisions view
+      if (questionIndex < questions.length - 1) {
+        setQuestionIndex((i) => i + 1);
+      } else {
+        setCentreView('ASSUMED');
+        setQuestionIndex(0);
+      }
+    } catch {
+      setSubmitError('Could not reach the server. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   // Derive view from activeStageRun status (Realtime updates drive this)
   const status = activeStageRun?.status ?? 'IDLE';
   const runningStatuses = ['RUNNING', 'PENDING', 'PROCEEDING', 'IC_RUNNING', 'IG_CALL_1', 'IG_CALL_2', 'FIDELITY_CHECK', 'SPEC_ACCEPTANCE_TESTING', 'COS_REVIEWING', 'PLT_TRANSLATING', 'DA_REVIEWING'];
@@ -266,21 +311,6 @@ export function StageRunner({ project, activeStageRun }: Props) {
 
   const view = centreView !== 'IDLE' ? centreView : derivedView;
 
-  // Stub questions (replaced by API data in Phase 6)
-  const stubQuestions: Question[] = [
-    {
-      id: 'q1',
-      text: 'How should old user data be handled?',
-      rationale: 'Your data retention policy affects legal compliance, storage costs, and what happens when users delete their accounts.',
-      options: [
-        { key: 'A', text: 'Delete after 90 days of inactivity' },
-        { key: 'B', text: 'Keep indefinitely, user can export', recommended: true },
-        { key: 'C', text: 'Delete immediately on account closure' },
-        { key: 'D', text: 'I have a different approach' },
-      ],
-    },
-  ];
-
   const stubAssumed: AssumedDecision[] = [
     { id: 'a1', title: 'UUID format for primary keys', explanation: 'Your team chose UUID v4 format for all PKs. Standard choice for PostgreSQL.' },
     { id: 'a2', title: 'Soft deletes for user data', explanation: 'Records marked deleted_at rather than physically removed. Allows recovery.' },
@@ -289,15 +319,6 @@ export function StageRunner({ project, activeStageRun }: Props) {
 
   const stageName = 'Stage ' + project.current_stage;
   const groups = getStubGroups(project.current_stage);
-
-  function handleAnswer(_qId: string, _key: string, _free?: string) {
-    if (questionIndex < stubQuestions.length - 1) {
-      setQuestionIndex((i) => i + 1);
-    } else {
-      setCentreView('ASSUMED');
-      setQuestionIndex(0);
-    }
-  }
 
   return (
     <div className='stage-runner'>
@@ -316,16 +337,25 @@ export function StageRunner({ project, activeStageRun }: Props) {
 
       {view === 'CHECKPOINT_1' && <CheckpointBanner1 />}
 
-      {view === 'QUESTIONS' && (
+      {view === 'QUESTIONS' && questions.length > 0 && (
         <>
           <CheckpointBanner2 onReview={() => setCentreView('QUESTIONS')} />
           <FounderQuestion
-            question={stubQuestions[questionIndex]}
+            question={questions[questionIndex]}
             index={questionIndex}
-            total={stubQuestions.length}
+            total={questions.length}
             onAnswer={handleAnswer}
+            submitting={submitting}
+            submitError={submitError}
           />
         </>
+      )}
+
+      {view === 'QUESTIONS' && questions.length === 0 && (
+        <div className='checkpoint-banner checkpoint-banner--2'>
+          <p className='checkpoint-banner__title'>✅ Stage review complete</p>
+          <p>No questions required for this stage. Your team is proceeding.</p>
+        </div>
       )}
 
       {view === 'ASSUMED' && (
@@ -352,10 +382,10 @@ export function StageRunner({ project, activeStageRun }: Props) {
       {view === 'IDLE' && (
         <div className='stage-runner__idle'>
           <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 8px' }}>
-            Stage {project.current_stage} — Ready to begin
+            Stage {project.current_stage} – Ready to begin
           </h3>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', color: 'var(--color-text-secondary)', margin: '0 0 24px', lineHeight: 1.6 }}>
-            Your idea has been validated by the Council. Click below to start Stage {project.current_stage} — your AI engineering team will begin work immediately.
+            Your idea has been validated by the Council. Click below to start Stage {project.current_stage} – your AI engineering team will begin work immediately.
           </p>
           {startError && (
             <p style={{ fontSize: '13px', color: 'var(--color-error)', marginBottom: '12px' }}>{startError}</p>
