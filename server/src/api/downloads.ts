@@ -94,7 +94,7 @@ export async function downloadsRoutes(app: FastifyInstance) {
   // Spec PDF Ã¢â‚¬â€ free on first project, Ã‚Â£10 per artifact on subsequent projects
   app.get('/api/downloads/spec/:project_id', { preHandler: requireAuth }, async (req, reply) => {
     const { project_id } = req.params as { project_id: string };
-    const userId = (req as any).userId;
+    const userId = (req as any).profile?.id ?? (req as any).userId;
     try {
       // Verify project membership — spec PDF is free for all members
       const { data: proj } = await supabase.from('projects').select('created_by').eq('id', project_id).single();
@@ -121,7 +121,7 @@ export async function downloadsRoutes(app: FastifyInstance) {
   // App Package ZIP Ã¢â‚¬â€ Ã‚Â£199 first project free tier, Ã‚Â£10 subsequent, included on Pro
   app.get('/api/downloads/app/:project_id', { preHandler: requireAuth }, async (req, reply) => {
     const { project_id } = req.params as { project_id: string };
-    const userId = (req as any).userId;
+    const userId = (req as any).profile?.id ?? (req as any).userId;
     try {
       const access = await getDownloadAccess(userId, project_id, 'APP_PACKAGE');
       if (!access.allowed) {
@@ -152,7 +152,7 @@ export async function downloadsRoutes(app: FastifyInstance) {
   // Called after Stripe confirms payment client-side Ã¢â‚¬â€ records payment + returns signed URL
   app.post('/api/downloads/app/payment-confirm', { preHandler: requireAuth }, async (req, reply) => {
     const { project_id, payment_intent_id } = req.body as { project_id: string; payment_intent_id: string };
-    const userId = (req as any).userId;
+    const userId = (req as any).profile?.id ?? (req as any).userId;
     try {
       // Verify PaymentIntent status with Stripe directly
       const pi = await stripe.paymentIntents.retrieve(payment_intent_id);
