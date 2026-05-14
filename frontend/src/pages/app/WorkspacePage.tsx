@@ -54,6 +54,18 @@ export default function WorkspacePage() {
       .finally(() => setLoading(false));
   }, [id, navigate]);
 
+  // ── Refetch stage run when selected stage changes ──────────────────────
+  useEffect(() => {
+    if (!id || selectedStage === 0) return;
+    apiFetch('/api/projects/' + id)
+      .then(async (res) => {
+        if (!res.ok) return;
+        const data = await res.json();
+        setStageRuns(data.stageRuns);
+      })
+      .catch(() => {});
+  }, [id, selectedStage]);
+
   // ── Realtime subscription (Doc 8D Phase 5) ───────────────────────────
   useEffect(() => {
     if (!id) return;
