@@ -111,8 +111,16 @@ export async function downloadsRoutes(app: FastifyInstance) {
           payment_intent_client_secret: pi.client_secret,
         });
       }
-      // Allowed Ã¢â‚¬â€ return signed URL from storage
-      const url = await generateSignedUrl('artifacts', project_id + '/spec.pdf');
+      // Generate PDF on-demand if not yet in storage
+      const storagePath = project_id + '/spec.pdf';
+      const { data: existing } = await supabase.storage.from('artifacts').list(project_id);
+      const alreadyExists = (existing ?? []).some((f: any) => f.name === 'spec.pdf');
+      if (!alreadyExists) {
+        const { generateSpecPdf } = await import('../pipeline/zip-generator.js');
+        const pdfBuffer = await generateSpecPdf(project_id, [0,1,2,3,4,5,6,7,8,9,10,11,12], supabase as any);
+        await supabase.storage.from('artifacts').upload(storagePath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
+      }
+      const url = await generateSignedUrl('artifacts', storagePath);
       return reply.send({ available: true, download_url: url });
     } catch (err: any) {
       if (err.message === 'FORBIDDEN') return reply.status(403).send({ error: { code: 'FORBIDDEN' } });
