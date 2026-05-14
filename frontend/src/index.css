@@ -394,3 +394,6 @@ input, textarea, select { font-family: var(--font-sans); }
 .council-complete__icon  { font-size: 48px; color: #2D6A4F; }
 .council-complete__title { font-size: 24px; font-weight: 700; margin: 0; color: var(--color-text-primary); }
 .council-complete__sub   { font-size: 14px; color: var(--color-text-secondary); margin: 0; }
+/* Sidebar selected stage highlight */
+.pipeline-sidebar__item--selected { background: rgba(140,0,180,0.08); border-radius: 6px; font-weight: 600; }
+.pipeline-sidebar__item--clickable:hover { background: rgba(140,0,180,0.05); border-radius: 6px; }

@@ -318,7 +318,9 @@ export function StageRunner({ project, activeStageRun, displayStage }: Props) {
     { id: 'a3', title: 'UTC timezone for all timestamps', explanation: 'Standard engineering practice.' },
   ];
 
-  const stageName = 'Stage ' + (displayStage ?? project.current_stage);
+  const NAMES = ["P0 Idea Validation","P0.5 Feature Discovery","S1 Product Spec","S2 Architecture","S3 Data Architecture","S4 Backend & API","S5 Frontend & Client","S6 QA & Testing","S7 Security","S8 Infrastructure","S9 Performance","S10 Deployment","S11 Handover"];
+  const stageNum = displayStage ?? project.current_stage;
+  const stageName = NAMES[stageNum] ?? 'Stage ' + stageNum;
   const groups = getStubGroups(project.current_stage);
 
   return (
