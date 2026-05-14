@@ -109,7 +109,7 @@ export default function WorkspacePage() {
       <main className='workspace__centre'>
         <StageRunner
           project={project}
-          activeStageRun={displayStageRun}
+          activeStageRun={displayStageRun} displayStage={displayStage}
           stageRuns={stageRuns}
         />
       </main>
