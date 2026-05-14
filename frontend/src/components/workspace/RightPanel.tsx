@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Project, StageRun } from '../../pages/app/WorkspacePage';
 
 interface Props {
@@ -12,6 +13,25 @@ interface Props {
 type DownloadState = 'FREE_FIRST' | 'FREE_SUBSEQUENT' | 'PRO';
 
 function DownloadPanel({ projectId, downloadState }: { projectId: string; downloadState: DownloadState }) {
+  const [pdfLoading, setPdfLoading] = React.useState(false);
+
+  async function handleDownloadPdf() {
+    setPdfLoading(true);
+    try {
+      const res = await fetch('/api/downloads/spec/' + projectId, { credentials: 'include' });
+      const data = await res.json();
+      if (data.download_url) {
+        window.open(data.download_url, '_blank');
+      } else {
+        alert('PDF not available yet. Please try again shortly.');
+      }
+    } catch {
+      alert('Failed to download PDF. Please try again.');
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className='download-panel'>
       <p className='download-panel__title'>DOWNLOADS</p>
@@ -19,7 +39,9 @@ function DownloadPanel({ projectId, downloadState }: { projectId: string; downlo
       <div className='download-panel__item'>
         <span className='download-panel__label'>Specification PDF</span>
         <span className='download-panel__tag download-panel__tag--free'>FREE</span>
-        <button className='btn btn--sm btn--ghost'>Download PDF</button>
+        <button className='btn btn--sm btn--ghost' onClick={handleDownloadPdf} disabled={pdfLoading}>
+          {pdfLoading ? 'Loading...' : 'Download PDF'}
+        </button>
       </div>
 
       <div className='download-panel__item'>
