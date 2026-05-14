@@ -36,6 +36,7 @@ export default function WorkspacePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStage, setSelectedStage] = useState<number>(0);
+  const handleStageSelect = (stage: number) => { console.log("[nav] Stage selected:", stage); setSelectedStage(stage); };
 
   // ── Initial data fetch ────────────────────────────────────────────────
   useEffect(() => {
@@ -100,7 +101,7 @@ export default function WorkspacePage() {
       <aside className='workspace__left'>
         <PipelineSidebar
           stageRuns={stageRuns}
-          currentStage={project.current_stage} selectedStage={displayStage} onStageSelect={setSelectedStage}
+          currentStage={project.current_stage} selectedStage={displayStage} onStageSelect={handleStageSelect}
           progressPct={project.progress_pct}
         />
       </aside>
