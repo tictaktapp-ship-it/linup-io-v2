@@ -342,7 +342,6 @@ export function StageRunner({ project, activeStageRun, displayStage }: Props) {
 
       {view === 'QUESTIONS' && questions.length > 0 && (
         <>
-          <CheckpointBanner2 onReview={() => setCentreView('QUESTIONS')} />
           <FounderQuestion
             question={questions[questionIndex]}
             index={questionIndex}
