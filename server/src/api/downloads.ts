@@ -97,8 +97,8 @@ export async function downloadsRoutes(app: FastifyInstance) {
     const userId = (req as any).userId;
     try {
       // Verify project membership — spec PDF is free for all members
-      const { data: member } = await supabase.from('project_members').select('id').eq('project_id', project_id).eq('user_id', userId).single();
-      if (!member) return reply.status(403).send({ error: { code: 'FORBIDDEN' } });
+      const { data: proj } = await supabase.from('projects').select('created_by').eq('id', project_id).single();
+      if (!proj || proj.created_by !== userId) return reply.status(403).send({ error: { code: 'FORBIDDEN' } });
       // Generate PDF on-demand if not yet in storage
       const storagePath = project_id + '/spec.pdf';
       const { data: existing } = await supabase.storage.from('artifacts').list(project_id);
